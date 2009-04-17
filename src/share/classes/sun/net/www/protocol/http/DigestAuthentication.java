@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -59,6 +59,8 @@ class DigestAuthentication extends AuthenticationInfo {
     // instances as a result of a single authorization (for multiple domains)
 
     static class Parameters implements java.io.Serializable {
+        private static final long serialVersionUID = -3584543755194526252L;
+
         private boolean serverQop; // server proposed qop=auth
         private String opaque;
         private String cnonce;

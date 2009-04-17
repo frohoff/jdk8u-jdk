@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -681,9 +681,9 @@ public class DefaultTableModel extends AbstractTableModel implements Serializabl
         if (anArray == null) {
             return null;
         }
-        Vector v = new Vector(anArray.length);
-        for (int i=0; i < anArray.length; i++) {
-            v.addElement(anArray[i]);
+        Vector<Object> v = new Vector<Object>(anArray.length);
+        for (Object o : anArray) {
+            v.addElement(o);
         }
         return v;
     }
@@ -698,9 +698,9 @@ public class DefaultTableModel extends AbstractTableModel implements Serializabl
         if (anArray == null) {
             return null;
         }
-        Vector v = new Vector(anArray.length);
-        for (int i=0; i < anArray.length; i++) {
-            v.addElement(convertToVector(anArray[i]));
+        Vector<Vector> v = new Vector<Vector>(anArray.length);
+        for (Object[] o : anArray) {
+            v.addElement(convertToVector(o));
         }
         return v;
     }

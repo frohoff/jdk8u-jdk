@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -85,6 +85,7 @@ public class StringValueExp implements ValueExp   {
     /* There is no need for this method, because if a query is being
        evaluated a StringValueExp can only appear inside a QueryExp,
        and that QueryExp will itself have done setMBeanServer.  */
+    @Deprecated
     public void setMBeanServer(MBeanServer s)  { }
 
     /**

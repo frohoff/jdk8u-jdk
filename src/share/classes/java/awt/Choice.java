@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -207,9 +207,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         }
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**
@@ -230,7 +228,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         pItems.insertElementAt(item, index);
         ChoicePeer peer = (ChoicePeer)this.peer;
         if (peer != null) {
-            peer.addItem(item, index);
+            peer.add(item, index);
         }
         // no selection or selection shifted up
         if (selectedIndex < 0 || selectedIndex >= index) {
@@ -269,9 +267,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         }
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**
@@ -299,9 +295,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         }
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**
@@ -323,9 +317,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         }
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**
@@ -367,9 +359,7 @@ public class Choice extends Component implements ItemSelectable, Accessible {
         }
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -191,7 +191,7 @@ public class MetalInternalFrameTitlePane  extends BasicInternalFrameTitlePane {
         extends BasicInternalFrameTitlePane.PropertyChangeHandler
     {
         public void propertyChange(PropertyChangeEvent evt) {
-            String prop = (String)evt.getPropertyName();
+            String prop = evt.getPropertyName();
             if( prop.equals(JInternalFrame.IS_SELECTED_PROPERTY) ) {
                 Boolean b = (Boolean)evt.getNewValue();
                 iconButton.putClientProperty("paintActive", b);
@@ -242,7 +242,7 @@ public class MetalInternalFrameTitlePane  extends BasicInternalFrameTitlePane {
             }
 
             // Compute height.
-            int height = 0;
+            int height;
             if (isPalette) {
                 height = paletteTitleHeight;
             } else {
@@ -410,7 +410,7 @@ public class MetalInternalFrameTitlePane  extends BasicInternalFrameTitlePane {
         g.drawLine ( width - 1, 0 , width -1, 0);
 
 
-        int titleLength = 0;
+        int titleLength;
         int xOffset = leftToRight ? 5 : width - 5;
         String frameTitle = frame.getTitle();
 

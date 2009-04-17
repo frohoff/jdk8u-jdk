@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -56,7 +56,8 @@ import javax.swing.border.LineBorder;
  * @author JavaSoft International
  */
 
-public class CompositionArea extends JPanel implements InputMethodListener {
+// This class is final due to the 6607310 fix. Refer to the CR for details.
+public final class CompositionArea extends JPanel implements InputMethodListener {
 
     private CompositionAreaHandler handler;
 

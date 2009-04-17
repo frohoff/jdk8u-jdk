@@ -1,5 +1,5 @@
 /*
- * Portions Copyright 2000-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Portions Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -373,7 +373,7 @@ public class ModelMBeanInfoSupport extends MBeanInfo implements ModelMBeanInfo {
                     "getDescriptors(String)", "Entry");
         }
 
-        if ((inDescriptorType == null) || (inDescriptorType.isEmpty())) {
+        if ((inDescriptorType == null) || (inDescriptorType.equals(""))) {
             inDescriptorType = "all";
         }
 
@@ -616,7 +616,7 @@ public class ModelMBeanInfoSupport extends MBeanInfo implements ModelMBeanInfo {
             inDescriptor = new DescriptorSupport();
         }
 
-        if ((inDescriptorType == null) || (inDescriptorType.isEmpty())) {
+        if ((inDescriptorType == null) || (inDescriptorType.equals(""))) {
             inDescriptorType =
                     (String) inDescriptor.getFieldValue("descriptorType");
 

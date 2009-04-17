@@ -1,5 +1,5 @@
 #
-# Copyright 2000-2005 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -55,9 +55,6 @@ LIBRARY = jaas_nt
     EXTRA_LIBS += netapi32.lib user32.lib mpr.lib
   endif #fdlibm
   # code generates errors when compiled at warning level 3 and warnings are fatal
-  ifeq ($(ARCH_DATA_MODEL), 64)
-    COMPILER_WARNINGS_FATAL=false
-  endif # ARCH_DATA_MODEL
 endif # windows
 
 ifeq ($(PLATFORM), solaris)

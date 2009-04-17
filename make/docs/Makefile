@@ -1,5 +1,5 @@
 #
-# Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1997-2009 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -45,6 +45,7 @@ endif
 DOCSTMPDIR          = $(TEMPDIR)/doctmp
 
 COMMON_JAVADOCFLAGS =					\
+		$(NO_PROPRIETARY_API_WARNINGS)		\
 		-source 1.5				\
 		-quiet					\
                 -use					\
@@ -64,7 +65,7 @@ CORE_JAVADOCFLAGS  = $(COMMON_JAVADOCFLAGS)		\
 		-bottom $(JAVADOCBOTTOM_SWITCH)		\
 		$(OVERVIEW_OPTION)
 
-DRAFT = '<br><b>DRAFT&nbsp;'$(MILESTONE)-$(BUILD_NUMBER)'</b>'
+DRAFT = '<br><strong>DRAFT&nbsp;'$(MILESTONE)-$(BUILD_NUMBER)'</strong>'
 THIS_YEAR := $(shell $(DATE) | $(SED) -e 's/  / /g' | $(CUT) -d' ' -f6)
 TRADEMARK = &\#x2122;
 
@@ -95,7 +96,7 @@ endif
 
 JAVADOCTITLE  = 'Java$(TRADEMARK) Platform, Standard Edition $(JDK_MINOR_VERSION)<br>API Specification'
 JAVADOCWINDOWTITLE  = 'Java Platform SE $(JDK_MINOR_VERSION)'
-JAVADOCHEADER = '<b>Java$(TRADEMARK)&nbsp;Platform<br>Standard&nbsp;Ed.&nbsp;$(JDK_MINOR_VERSION)</b>'
+JAVADOCHEADER = '<strong>Java$(TRADEMARK)&nbsp;Platform<br>Standard&nbsp;Ed.&nbsp;$(JDK_MINOR_VERSION)</strong>'
 JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Submit a bug or feature</a><br>For further API reference and developer documentation, see <a href="{@docroot}/../../webnotes/devdocs-vs-specs.html">Java SE Developer Documentation</a>. That documentation contains more detailed, developer-targeted descriptions, with conceptual overviews, definitions of terms, workarounds, and working code examples. <p>Copyright $(THIS_YEAR) Sun Microsystems, Inc. All Rights Reserved. Use is subject to <a href="{@docroot}/../legal/license.html">license terms</a>. Also see the <a href="http://java.sun.com/docs/redist.html">documentation redistribution policy</a>.</font>'
 JAVADOCOVERVIEW = $(SHARE_SRC)/classes/overview-core.html
 
@@ -120,7 +121,7 @@ DOMAPI_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)		      \
                     -group $(DOMAPI_GROUPNAME) $(DOMAPI_REGEXP)
 DOMAPI_JAVADOCTITLE  = 'Common DOM API'
 DOMAPI_JAVADOCWINDOWTITLE  = 'Common DOM API'
-DOMAPI_JAVADOCHEADER = '<b>Common DOM API</b>'
+DOMAPI_JAVADOCHEADER = '<strong>Common DOM API</strong>'
 DOMAPI_JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Submit a bug or feature</a><br>Java is a trademark or registered trademark of Sun Microsystems, Inc. in the US and other countries.<br>Copyright $(THIS_YEAR) Sun Microsystems, Inc. 4150 Network Circle<br>Santa Clara, California, 95054, U.S.A.  All Rights Reserved.</font>'
 DOMAPI_GROUPNAME = "Packages"
 DOMAPI_REGEXP = "com.sun.java.browser.dom:org.w3c.dom*"
@@ -140,7 +141,7 @@ MIRROR_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)		        \
                     -overview $(MIRROR_OVERVIEW)
 MIRROR_JAVADOCTITLE = 'Mirror API'
 MIRROR_JAVADOCWINDOWTITLE = 'Mirror API'
-MIRROR_JAVADOCHEADER = '<b>Mirror API</b>'
+MIRROR_JAVADOCHEADER = '<strong>Mirror API</strong>'
 MIRROR_JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Report a bug or request a feature.</a><br>Copyright $(THIS_YEAR) Sun Microsystems, Inc. All Rights Reserved. Use is subject to license terms.</font>'
 MIRROR_GROUPNAME = "Packages"
 MIRROR_OVERVIEW = $(IMPORTSRCDIR)/com/sun/mirror/overview.html
@@ -163,7 +164,7 @@ DOCLETAPI_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)			 \
                     -group $(DOCLETAPI_GROUPNAME) $(DOCLETAPI_REGEXP)
 DOCLETAPI_JAVADOCTITLE  = 'Doclet API'
 DOCLETAPI_JAVADOCWINDOWTITLE  = 'Doclet API'
-DOCLETAPI_JAVADOCHEADER = '<b>Doclet API</b>'
+DOCLETAPI_JAVADOCHEADER = '<strong>Doclet API</strong>'
 DOCLETAPI_JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Submit a bug or feature</a><br>Java is a trademark or registered trademark of Sun Microsystems, Inc. in the US and other countries.<br>Copyright 1993-$(THIS_YEAR) Sun Microsystems, Inc. 4150 Network Circle<br>Santa Clara, California, 95054, U.S.A.  All Rights Reserved.</font>'
 DOCLETAPI_GROUPNAME = "Packages"
 DOCLETAPI_REGEXP = "com.sun.javadoc"
@@ -203,6 +204,9 @@ JDI_DOCTITLE    = "Java$(TRADEMARK) Debug Interface"
 JDI_HEADER      = "Java Debug Interface"
 # JDI_PKGS is located in NON_CORE_PKGS.gmk
 
+# Variables used by security components
+SECURITYAPI_JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Report a bug or request a feature.</a><br>Copyright $(THIS_YEAR) Sun Microsystems, Inc. All Rights Reserved. Use is subject to license terms.</font>'
+
 #
 # Variables used by JAAS target
 #
@@ -220,6 +224,7 @@ JAAS_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)			 \
                    -windowtitle $(JAAS_WINDOWTITLE)              \
                    -doctitle $(JAAS_DOCTITLE)                    \
                    -header $(JAAS_JAVADOCHEADER)                 \
+                   -bottom $(SECURITYAPI_JAVADOCBOTTOM)                      \
                    -linkoffline ../../../../../api $(DOCSDIR)/api/	 \
                    -overview $(TOPDIR)/src/share/classes/com/sun/security/auth/jaas-overview.html
 JAAS_WINDOWTITLE = "Java Authentication and Authorization Service "
@@ -242,6 +247,7 @@ JGSS_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)			\
                    -windowtitle $(JGSS_WINDOWTITLE)             \
                    -doctitle $(JGSS_DOCTITLE)                   \
                    -header $(JGSS_JAVADOCHEADER)                \
+                   -bottom $(SECURITYAPI_JAVADOCBOTTOM)                      \
                    -linkoffline ../../../../../api $(DOCSDIR)/api/ \
                    -overview $(JGSS_SOURCEPATH)/com/sun/security/jgss/jgss-overview.html
 
@@ -265,6 +271,7 @@ SMARTCARDIO_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)			\
                    -windowtitle $(SMARTCARDIO_WINDOWTITLE)             \
                    -doctitle $(SMARTCARDIO_DOCTITLE)                   \
                    -header $(SMARTCARDIO_JAVADOCHEADER)                \
+                   -bottom $(SECURITYAPI_JAVADOCBOTTOM)                      \
                    -linkoffline ../../../../../api $(DOCSDIR)/api/
 
 SMARTCARDIO_WINDOWTITLE = "Java Smart Card I/O"
@@ -407,7 +414,7 @@ TREEAPI_JAVADOCFLAGS = $(COMMON_JAVADOCFLAGS)		        \
 #
 TREEAPI_JAVADOCTITLE = 'Compiler Tree API'
 TREEAPI_JAVADOCWINDOWTITLE = 'Compiler Tree API'
-TREEAPI_JAVADOCHEADER = '<b>Compiler Tree API</b>'
+TREEAPI_JAVADOCHEADER = '<strong>Compiler Tree API</strong>'
 TREEAPI_JAVADOCBOTTOM = '<font size="-1"><a href="http://bugs.sun.com/services/bugreport/index.jsp">Report a bug or request a feature.</a><br>Copyright $(THIS_YEAR) Sun Microsystems, Inc. All Rights Reserved. Use is subject to license terms.</font>'
 TREEAPI_GROUPNAME = "Packages"
 TREEAPI_OVERVIEW = $(SHARE_SRC)/classes/com/sun/source/overview.html

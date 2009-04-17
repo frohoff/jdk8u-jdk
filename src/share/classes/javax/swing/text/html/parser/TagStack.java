@@ -1,5 +1,5 @@
 /*
- * Copyright 1998 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -122,22 +122,6 @@ class TagStack implements DTDConstants {
      */
     boolean excluded(int elemIndex) {
         return (exclusions != null) && exclusions.get(elem.getIndex());
-    }
-
-    /**
-     * Update the Vector elemVec with all the elements that
-     * are part of the inclusions listed in DTD for the element
-     * currently on the TagStack.
-     */
-    boolean included(Vector elemVec, DTD dtd) {
-
-        for (int i = 0 ; i < inclusions.size(); i++) {
-            if (inclusions.get(i)) {
-                elemVec.addElement(dtd.getElement(i));
-                System.out.println("Element add thru' inclusions: " + dtd.getElement(i).getName());
-            }
-        }
-        return (!elemVec.isEmpty());
     }
 
 

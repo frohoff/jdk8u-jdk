@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -165,16 +165,18 @@ Java_java_net_Inet4AddressImpl_lookupAllHostAddr(JNIEnv *env, jobject this,
     hostname = JNU_GetStringPlatformChars(env, host, JNI_FALSE);
     CHECK_NULL_RETURN(hostname, NULL);
 
+#ifdef __solaris__
     /*
      * Workaround for Solaris bug 4160367 - if a hostname contains a
      * white space then 0.0.0.0 is returned
      */
-    if (isspace(hostname[0])) {
+    if (isspace((unsigned char)hostname[0])) {
         JNU_ThrowByName(env, JNU_JAVANETPKG "UnknownHostException",
                         (char *)hostname);
         JNU_ReleaseStringPlatformChars(env, host, hostname);
         return NULL;
     }
+#endif
 
     /* Try once, with our static buffer. */
 #ifdef __GLIBC__
@@ -201,7 +203,6 @@ Java_java_net_Inet4AddressImpl_lookupAllHostAddr(JNIEnv *env, jobject this,
     }
     if (hp != NULL) {
         struct in_addr **addrp = (struct in_addr **) hp->h_addr_list;
-        int len = sizeof(struct in_addr);
         int i = 0;
 
         while (*addrp != (struct in_addr *) 0) {
@@ -326,7 +327,8 @@ static jboolean
 ping4(JNIEnv *env, jint fd, struct sockaddr_in* him, jint timeout,
       struct sockaddr_in* netif, jint ttl) {
     jint size;
-    jint n, len, hlen1, icmplen;
+    jint n, hlen1, icmplen;
+    socklen_t len;
     char sendbuf[1500];
     char recvbuf[1500];
     struct icmp *icmp;

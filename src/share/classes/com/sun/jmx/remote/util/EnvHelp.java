@@ -1,5 +1,6 @@
+
 /*
- * Copyright 2003-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -40,9 +41,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import javax.management.ObjectName;
 import javax.management.MBeanServer;
@@ -50,6 +48,9 @@ import javax.management.InstanceNotFoundException;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXConnectorServerFactory;
 import com.sun.jmx.mbeanserver.GetPropertyAction;
+import com.sun.jmx.remote.security.NotificationAccessController;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorServer;
 
 public class EnvHelp {
 
@@ -117,7 +118,7 @@ public class EnvHelp {
      * <code>jmx.remote.default.class.loader.name</code> is specified
      * and the ClassLoader MBean is not found in <var>mbs</var>.
      */
-    public static ClassLoader resolveServerClassLoader(Map env,
+    public static ClassLoader resolveServerClassLoader(Map<String, ?> env,
                                                        MBeanServer mbs)
         throws InstanceNotFoundException {
 
@@ -194,7 +195,7 @@ public class EnvHelp {
      * <code>jmx.remote.default.class.loader</code> is specified
      * and is not an instance of {@link ClassLoader}.
      */
-    public static ClassLoader resolveClientClassLoader(Map env) {
+    public static ClassLoader resolveClientClassLoader(Map<String, ?> env) {
 
         if (env == null)
             return Thread.currentThread().getContextClassLoader();
@@ -241,7 +242,7 @@ public class EnvHelp {
 
         try {
             java.lang.reflect.Method getCause =
-                t.getClass().getMethod("getCause", (Class[]) null);
+                t.getClass().getMethod("getCause", (Class<?>[]) null);
             ret = (Throwable)getCause.invoke(t, (Object[]) null);
 
         } catch (Exception e) {
@@ -264,7 +265,7 @@ public class EnvHelp {
      * Returns the size of a notification buffer for a connector server.
      * The default value is 1000.
      */
-    public static int getNotifBufferSize(Map env) {
+    public static int getNotifBufferSize(Map<String, ?> env) {
         int defaultQueueSize = 1000; // default value
 
         // keep it for the compability for the fix:
@@ -327,7 +328,7 @@ public class EnvHelp {
      * Returns the maximum notification number which a client will
      * fetch every time.
      */
-    public static int getMaxFetchNotifNumber(Map env) {
+    public static int getMaxFetchNotifNumber(Map<String, ?> env) {
         return (int) getIntegerAttribute(env, MAX_FETCH_NOTIFS, 1000, 1,
                                          Integer.MAX_VALUE);
     }
@@ -344,9 +345,26 @@ public class EnvHelp {
     /**
      * Returns the timeout for a client to fetch notifications.
      */
-    public static long getFetchTimeout(Map env) {
+    public static long getFetchTimeout(Map<String, ?> env) {
         return getIntegerAttribute(env, FETCH_TIMEOUT, 60000L, 0,
-                                   Long.MAX_VALUE);
+                Long.MAX_VALUE);
+    }
+
+    /**
+     * <p>Name of the attribute that specifies an object that will check
+     * accesses to add/removeNotificationListener and also attempts to
+     * receive notifications.  The value associated with this attribute
+     * should be a <code>NotificationAccessController</code> object.
+     * The default value is null.</p>
+     * This field is not public because of its com.sun dependency.
+     */
+    public static final String NOTIF_ACCESS_CONTROLLER =
+            "com.sun.jmx.remote.notification.access.controller";
+
+    public static NotificationAccessController getNotificationAccessController(
+            Map<String, ?> env) {
+        return (env == null) ? null :
+            (NotificationAccessController) env.get(NOTIF_ACCESS_CONTROLLER);
     }
 
     /**
@@ -361,7 +379,7 @@ public class EnvHelp {
      * an entry for <code>name</code> but it does not meet the
      * constraints above.
      */
-    public static long getIntegerAttribute(Map env, String name,
+    public static long getIntegerAttribute(Map<String, ?> env, String name,
                                            long defaultValue, long minValue,
                                            long maxValue) {
         final Object o;
@@ -404,9 +422,8 @@ public class EnvHelp {
 
     /* Check that all attributes have a key that is a String.
        Could make further checks, e.g. appropriate types for attributes.  */
-    public static void checkAttributes(Map attributes) {
-        for (Iterator it = attributes.keySet().iterator(); it.hasNext(); ) {
-            Object key = it.next();
+    public static void checkAttributes(Map<?, ?> attributes) {
+        for (Object key : attributes.keySet()) {
             if (!(key instanceof String)) {
                 final String msg =
                     "Attributes contain key that is not a string: " + key;
@@ -438,7 +455,7 @@ public class EnvHelp {
         logger.trace("purgeUnserializable", "starts");
         ObjectOutputStream oos = null;
         int i = 0;
-        for (Iterator it = objects.iterator(); it.hasNext(); i++) {
+        for (Iterator<?> it = objects.iterator(); it.hasNext(); i++) {
             Object v = it.next();
 
             if (v == null || v instanceof String) {
@@ -470,24 +487,24 @@ public class EnvHelp {
     }
 
     /**
-       The value of this attribute, if present, is a string specifying
-       what other attributes should not appear in
-       JMXConnectorServer.getAttributes().  It is a space-separated
-       list of attribute patterns, where each pattern is either an
-       attribute name, or an attribute prefix followed by a "*"
-       character.  The "*" has no special significance anywhere except
-       at the end of a pattern.  By default, this list is added to the
-       list defined by {@link #DEFAULT_HIDDEN_ATTRIBUTES} (which
-       uses the same format).  If the value of this attribute begins
-       with an "=", then the remainder of the string defines the
-       complete list of attribute patterns.
+     * The value of this attribute, if present, is a string specifying
+     * what other attributes should not appear in
+     * JMXConnectorServer.getAttributes().  It is a space-separated
+     * list of attribute patterns, where each pattern is either an
+     * attribute name, or an attribute prefix followed by a "*"
+     * character.  The "*" has no special significance anywhere except
+     * at the end of a pattern.  By default, this list is added to the
+     * list defined by {@link #DEFAULT_HIDDEN_ATTRIBUTES} (which
+     * uses the same format).  If the value of this attribute begins
+     * with an "=", then the remainder of the string defines the
+     * complete list of attribute patterns.
      */
     public static final String HIDDEN_ATTRIBUTES =
         "jmx.remote.x.hidden.attributes";
 
     /**
-       Default list of attributes not to show.
-       @see #HIDDEN_ATTRIBUTES
+     * Default list of attributes not to show.
+     * @see #HIDDEN_ATTRIBUTES
      */
     /* This list is copied directly from the spec, plus
        java.naming.security.*.  Most of the attributes here would have
@@ -547,18 +564,18 @@ public class EnvHelp {
            guarantees that we will never call next() on the corresponding
            iterator.  */
         String sentinelKey = map.lastKey() + "X";
-        Iterator keyIterator = map.keySet().iterator();
-        Iterator stringIterator = hiddenStrings.iterator();
-        Iterator prefixIterator = hiddenPrefixes.iterator();
+        Iterator<String> keyIterator = map.keySet().iterator();
+        Iterator<String> stringIterator = hiddenStrings.iterator();
+        Iterator<String> prefixIterator = hiddenPrefixes.iterator();
 
         String nextString;
         if (stringIterator.hasNext())
-            nextString = (String) stringIterator.next();
+            nextString = stringIterator.next();
         else
             nextString = sentinelKey;
         String nextPrefix;
         if (prefixIterator.hasNext())
-            nextPrefix = (String) prefixIterator.next();
+            nextPrefix = prefixIterator.next();
         else
             nextPrefix = sentinelKey;
 
@@ -566,7 +583,7 @@ public class EnvHelp {
            or prefix, remove it. */
     keys:
         while (keyIterator.hasNext()) {
-            String key = (String) keyIterator.next();
+            String key = keyIterator.next();
 
             /* Continue through string-match values until we find one
                that is either greater than the current key, or equal
@@ -574,7 +591,7 @@ public class EnvHelp {
             int cmp = +1;
             while ((cmp = nextString.compareTo(key)) < 0) {
                 if (stringIterator.hasNext())
-                    nextString = (String) stringIterator.next();
+                    nextString = stringIterator.next();
                 else
                     nextString = sentinelKey;
             }
@@ -592,7 +609,7 @@ public class EnvHelp {
                     continue keys;
                 }
                 if (prefixIterator.hasNext())
-                    nextPrefix = (String) prefixIterator.next();
+                    nextPrefix = prefixIterator.next();
                 else
                     nextPrefix = sentinelKey;
             }
@@ -623,7 +640,7 @@ public class EnvHelp {
     /**
      * Returns the server side connection timeout.
      */
-    public static long getServerConnectionTimeout(Map env) {
+    public static long getServerConnectionTimeout(Map<String, ?> env) {
         return getIntegerAttribute(env, SERVER_CONNECTION_TIMEOUT, 120000L,
                                    0, Long.MAX_VALUE);
     }
@@ -639,7 +656,7 @@ public class EnvHelp {
     /**
      * Returns the client connection check period.
      */
-    public static long getConnectionCheckPeriod(Map env) {
+    public static long getConnectionCheckPeriod(Map<String, ?> env) {
         return getIntegerAttribute(env, CLIENT_CONNECTION_CHECK_PERIOD, 60000L,
                                    0, Long.MAX_VALUE);
     }
@@ -651,6 +668,8 @@ public class EnvHelp {
      * @param env the environment map.
      * @param prop the name of the property in the environment map whose
      * returned string value must be converted into a boolean value.
+     * @param systemProperty if true, consult a system property of the
+     * same name if there is no entry in the environment map.
      *
      * @return
      *   <ul>
@@ -671,16 +690,74 @@ public class EnvHelp {
      * @throws ClassCastException if {@code env.get(prop)} cannot be cast
      * to {@code String}.
      */
-    public static boolean computeBooleanFromString(Map env, String prop)
-        throws IllegalArgumentException, ClassCastException {
+    public static boolean computeBooleanFromString(
+            Map<String, ?> env, String prop, boolean systemProperty) {
+
+        if (env == null)
+            throw new IllegalArgumentException("env map cannot be null");
+
+        // returns a default value of 'false' if no property is found...
+        return computeBooleanFromString(env,prop,systemProperty,false);
+    }
+
+    /**
+     * Computes a boolean value from a string value retrieved from a
+     * property in the given map.
+     *
+     * @param env the environment map.
+     * @param prop the name of the property in the environment map whose
+     * returned string value must be converted into a boolean value.
+     * @param systemProperty if true, consult a system property of the
+     * same name if there is no entry in the environment map.
+     * @param defaultValue a default value to return in case no property
+     *        was defined.
+     *
+     * @return
+     *   <ul>
+     *   <li>{@code defaultValue} if {@code env.get(prop)} is {@code null}
+     *       and {@code systemProperty} is {@code false}</li>
+     *   <li>{@code defaultValue} if {@code env.get(prop)} is {@code null}
+     *       and {@code systemProperty} is {@code true} and
+     *       {@code System.getProperty(prop)} is {@code null}</li>
+     *   <li>{@code false} if {@code env.get(prop)} is {@code null}
+     *       and {@code systemProperty} is {@code true} and
+     *       {@code System.getProperty(prop).equalsIgnoreCase("false")}
+     *       is {@code true}</li>
+     *   <li>{@code true} if {@code env.get(prop)} is {@code null}
+     *       and {@code systemProperty} is {@code true} and
+     *       {@code System.getProperty(prop).equalsIgnoreCase("true")}
+     *       is {@code true}</li>
+     *   <li>{@code false} if
+     *       {@code ((String)env.get(prop)).equalsIgnoreCase("false")}
+     *       is {@code true}</li>
+     *   <li>{@code true} if
+     *       {@code ((String)env.get(prop)).equalsIgnoreCase("true")}
+     *       is {@code true}</li>
+     *   </ul>
+     *
+     * @throws IllegalArgumentException if {@code env} is {@code null} or
+     * {@code env.get(prop)} is not {@code null} and
+     * {@code ((String)env.get(prop)).equalsIgnoreCase("false")} and
+     * {@code ((String)env.get(prop)).equalsIgnoreCase("true")} are
+     * {@code false}.
+     * @throws ClassCastException if {@code env.get(prop)} cannot be cast
+     * to {@code String}.
+     */
+    public static boolean computeBooleanFromString(
+            Map<String, ?> env, String prop,
+            boolean systemProperty, boolean defaultValue) {
 
         if (env == null)
             throw new IllegalArgumentException("env map cannot be null");
 
         String stringBoolean = (String) env.get(prop);
+        if (stringBoolean == null && systemProperty) {
+            stringBoolean =
+                    AccessController.doPrivileged(new GetPropertyAction(prop));
+        }
 
         if (stringBoolean == null)
-            return false;
+            return defaultValue;
         else if (stringBoolean.equalsIgnoreCase("true"))
             return true;
         else if (stringBoolean.equalsIgnoreCase("false"))
@@ -698,10 +775,87 @@ public class EnvHelp {
     public static <K, V> Hashtable<K, V> mapToHashtable(Map<K, V> map) {
         HashMap<K, V> m = new HashMap<K, V>(map);
         if (m.containsKey(null)) m.remove(null);
-        for (Iterator i = m.values().iterator(); i.hasNext(); )
+        for (Iterator<?> i = m.values().iterator(); i.hasNext(); )
             if (i.next() == null) i.remove();
         return new Hashtable<K, V>(m);
     }
+
+    /**
+     * Returns true if the parameter JMXConnector.USE_EVENT_SERVICE is set to a
+     * String equals "true" by ignoring case in the map or in the System.
+     */
+    public static boolean eventServiceEnabled(Map<String, ?> env) {
+        return computeBooleanFromString(env, JMXConnector.USE_EVENT_SERVICE, true);
+    }
+
+    /**
+     * Returns true if the parameter JMXConnectorServer.DELEGATE_TO_EVENT_SERVICE
+     * is set to a String equals "true" (ignores case).
+     * If the property DELEGATE_TO_EVENT_SERVICE is not set, returns
+     * a default value of "true".
+     */
+    public static boolean delegateToEventService(Map<String, ?> env) {
+        return computeBooleanFromString(env,
+                JMXConnectorServer.DELEGATE_TO_EVENT_SERVICE, true, true);
+    }
+
+    /**
+     * <p>Name of the attribute that specifies whether a connector server
+     * should not prevent the VM from exiting
+     */
+    public static final String JMX_SERVER_DAEMON = "jmx.remote.x.daemon";
+
+    /**
+     * Returns true if {@value SERVER_DAEMON} is specified in the {@code env}
+     * as a key and its value is a String and it is equal to true ignoring case.
+     *
+     * @param env
+     * @return
+     */
+    public static boolean isServerDaemon(Map<String, ?> env) {
+        return (env != null) &&
+                ("true".equalsIgnoreCase((String)env.get(JMX_SERVER_DAEMON)));
+    }
+
+//    /**
+//     * <p>Name of the attribute that specifies an EventRelay object to use.
+//     */
+//    public static final String EVENT_RELAY =
+//            "jmx.remote.x.event.relay";
+//
+//
+//    /**
+//     * Returns an EventRelay object. The default one is FetchingEventRelay.
+//     * If {@code EVENT_RELAY} is specified in {@code env} as a key,
+//     * its value will be returned as an EventRelay object, if the value is
+//     * not of type {@code EventRelay}, the default {@code FetchingEventRelay}
+//     * will be returned.
+//     * If {@code EVENT_RELAY} is not specified but {@code ENABLE_EVENT_RELAY}
+//     * is specified as a key and its value is <code true>, the default {@code FetchingEventRelay}
+//     * will be returned.
+//     */
+//    public static EventRelay getEventRelay(Map env) {
+//        Map info = env == null ?
+//            Collections.EMPTY_MAP : env;
+//
+//        Object o = env.get(EVENT_RELAY);
+//        if (o instanceof EventRelay) {
+//            return (EventRelay)o;
+//        } else if (o != null) {
+//            logger.warning("getEventRelay",
+//                    "The user specified object is not an EventRelay object, " +
+//                    "using the default class FetchingEventRelay.");
+//
+//            return new FetchingEventRelay();
+//        }
+//
+//        if (enableEventRelay(env)) {
+//            return new FetchingEventRelay();
+//        }
+//
+//        return null;
+//    }
+
 
     private static final class SinkOutputStream extends OutputStream {
         public void write(byte[] b, int off, int len) {}

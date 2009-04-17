@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -774,8 +774,7 @@ public class DefaultCaret extends Rectangle implements Caret, FocusListener, Mou
      * @since 1.4
      */
     public ChangeListener[] getChangeListeners() {
-        return (ChangeListener[])listenerList.getListeners(
-                ChangeListener.class);
+        return listenerList.getListeners(ChangeListener.class);
     }
 
     /**
@@ -1330,7 +1329,7 @@ public class DefaultCaret extends Rectangle implements Caret, FocusListener, Mou
         if (this.dot != this.mark && component != null) {
             Clipboard clip = getSystemSelection();
             if (clip != null) {
-                String selectedText = null;
+                String selectedText;
                 if (component instanceof JPasswordField
                     && component.getClientProperty("JPasswordField.cutCopyAllowed") !=
                     Boolean.TRUE) {

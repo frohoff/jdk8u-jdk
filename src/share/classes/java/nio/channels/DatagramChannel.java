@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2001 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -26,28 +26,22 @@
 package java.nio.channels;
 
 import java.io.IOException;
+import java.net.ProtocolFamily;
 import java.net.DatagramSocket;
+import java.net.SocketOption;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.spi.*;
-
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.SelectorProvider;
 
 /**
  * A selectable channel for datagram-oriented sockets.
  *
- *
- * <p> Datagram channels are not a complete abstraction of network datagram
- * sockets.  Binding and the manipulation of socket options must be done
- * through an associated {@link java.net.DatagramSocket} object obtained by
- * invoking the {@link #socket() socket} method.  It is not possible to create
- * a channel for an arbitrary, pre-existing datagram socket, nor is it possible
- * to specify the {@link java.net.DatagramSocketImpl} object to be used by a
- * datagram socket associated with a datagram channel.
- *
- * <p> A datagram channel is created by invoking the {@link #open open} method
- * of this class.  A newly-created datagram channel is open but not connected.
- * A datagram channel need not be connected in order for the {@link #send send}
- * and {@link #receive receive} methods to be used.  A datagram channel may be
+ * <p> A datagram channel is created by invoking one of the {@link #open open} methods
+ * of this class. It is not possible to create a channel for an arbitrary,
+ * pre-existing datagram socket. A newly-created datagram channel is open but not
+ * connected. A datagram channel need not be connected in order for the {@link #send
+ * send} and {@link #receive receive} methods to be used.  A datagram channel may be
  * connected, by invoking its {@link #connect connect} method, in order to
  * avoid the overhead of the security checks are otherwise performed as part of
  * every send and receive operation.  A datagram channel must be connected in
@@ -59,10 +53,57 @@ import java.nio.channels.spi.*;
  * disconnected or closed.  Whether or not a datagram channel is connected may
  * be determined by invoking its {@link #isConnected isConnected} method.
  *
+ * <p> Socket options are configured using the {@link #setOption(SocketOption,Object)
+ * setOption} method. A datagram channel to an Internet Protocol socket supports
+ * the following options:
+ * <blockquote>
+ * <table border>
+ *   <tr>
+ *     <th>Option Name</th>
+ *     <th>Description</th>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#SO_SNDBUF SO_SNDBUF} </td>
+ *     <td> The size of the socket send buffer </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#SO_RCVBUF SO_RCVBUF} </td>
+ *     <td> The size of the socket receive buffer </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#SO_REUSEADDR SO_REUSEADDR} </td>
+ *     <td> Re-use address </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#SO_BROADCAST SO_BROADCAST} </td>
+ *     <td> Allow transmission of broadcast datagrams </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#IP_TOS IP_TOS} </td>
+ *     <td> The Type of Service (ToS) octet in the Internet Protocol (IP) header </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#IP_MULTICAST_IF IP_MULTICAST_IF} </td>
+ *     <td> The network interface for Internet Protocol (IP) multicast datagrams </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#IP_MULTICAST_TTL
+ *       IP_MULTICAST_TTL} </td>
+ *     <td> The <em>time-to-live</em> for Internet Protocol (IP) multicast
+ *       datagrams </td>
+ *   </tr>
+ *   <tr>
+ *     <td> {@link java.net.StandardSocketOption#IP_MULTICAST_LOOP
+ *       IP_MULTICAST_LOOP} </td>
+ *     <td> Loopback for Internet Protocol (IP) multicast datagrams </td>
+ *   </tr>
+ * </table>
+ * </blockquote>
+ * Additional (implementation specific) options may also be supported.
+ *
  * <p> Datagram channels are safe for use by multiple concurrent threads.  They
  * support concurrent reading and writing, though at most one thread may be
  * reading and at most one thread may be writing at any given time.  </p>
- *
  *
  * @author Mark Reinhold
  * @author JSR-51 Expert Group
@@ -71,7 +112,7 @@ import java.nio.channels.spi.*;
 
 public abstract class DatagramChannel
     extends AbstractSelectableChannel
-    implements ByteChannel, ScatteringByteChannel, GatheringByteChannel
+    implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, MulticastChannel
 {
 
     /**
@@ -88,7 +129,13 @@ public abstract class DatagramChannel
      * java.nio.channels.spi.SelectorProvider#openDatagramChannel()
      * openDatagramChannel} method of the system-wide default {@link
      * java.nio.channels.spi.SelectorProvider} object.  The channel will not be
-     * connected.  </p>
+     * connected.
+     *
+     * <p> The {@link ProtocolFamily ProtocolFamily} of the channel's socket
+     * is platform (and possibly configuration) dependent and therefore unspecified.
+     * The {@link #open(ProtocolFamily) open} allows the protocol family to be
+     * selected when opening a datagram channel, and should be used to open
+     * datagram channels that are intended for Internet Protocol multicasting.
      *
      * @return  A new datagram channel
      *
@@ -97,6 +144,39 @@ public abstract class DatagramChannel
      */
     public static DatagramChannel open() throws IOException {
         return SelectorProvider.provider().openDatagramChannel();
+    }
+
+    /**
+     * Opens a datagram channel.
+     *
+     * <p> The {@code family} parameter is used to specify the {@link
+     * ProtocolFamily}. If the datagram channel is to be used for IP multicasing
+     * then this should correspond to the address type of the multicast groups
+     * that this channel will join.
+     *
+     * <p> The new channel is created by invoking the {@link
+     * java.nio.channels.spi.SelectorProvider#openDatagramChannel(ProtocolFamily)
+     * openDatagramChannel} method of the system-wide default {@link
+     * java.nio.channels.spi.SelectorProvider} object.  The channel will not be
+     * connected.
+     *
+     * @param   family
+     *          The protocol family
+     *
+     * @return  A new datagram channel
+     *
+     * @throws  UnsupportedOperationException
+     *          If the specified protocol family is not supported. For example,
+     *          suppose the parameter is specified as {@link
+     *          java.net.StandardProtocolFamily#INET6 StandardProtocolFamily.INET6}
+     *          but IPv6 is not enabled on the platform.
+     * @throws  IOException
+     *          If an I/O error occurs
+     *
+     * @since   1.7
+     */
+    public static DatagramChannel open(ProtocolFamily family) throws IOException {
+        return SelectorProvider.provider().openDatagramChannel(family);
     }
 
     /**
@@ -118,6 +198,32 @@ public abstract class DatagramChannel
     // -- Socket-specific operations --
 
     /**
+     * @throws  AlreadyBoundException               {@inheritDoc}
+     * @throws  UnsupportedAddressTypeException     {@inheritDoc}
+     * @throws  ClosedChannelException              {@inheritDoc}
+     * @throws  IOException                         {@inheritDoc}
+     * @throws  SecurityException
+     *          If a security manager has been installed and its {@link
+     *          SecurityManager#checkListen checkListen} method denies the
+     *          operation
+     *
+     * @since 1.7
+     */
+    public abstract DatagramChannel bind(SocketAddress local)
+        throws IOException;
+
+    /**
+     * @throws  UnsupportedOperationException           {@inheritDoc}
+     * @throws  IllegalArgumentException                {@inheritDoc}
+     * @throws  ClosedChannelException                  {@inheritDoc}
+     * @throws  IOException                             {@inheritDoc}
+     *
+     * @since 1.7
+     */
+    public abstract <T> DatagramChannel setOption(SocketOption<T> name, T value)
+        throws IOException;
+
+    /**
      * Retrieves a datagram socket associated with this channel.
      *
      * <p> The returned object will not declare any public methods that are not
@@ -128,10 +234,10 @@ public abstract class DatagramChannel
     public abstract DatagramSocket socket();
 
     /**
-     * Tells whether or not this channel's socket is connected.  </p>
+     * Tells whether or not this channel's socket is connected.
      *
-     * @return  <tt>true</tt> if, and only if, this channel's socket
-     *          is connected
+     * @return  {@code true} if, and only if, this channel's socket
+     *          is {@link #isOpen open} and connected
      */
     public abstract boolean isConnected();
 
@@ -155,7 +261,10 @@ public abstract class DatagramChannel
      *
      * <p> This method may be invoked at any time.  It will not have any effect
      * on read or write operations that are already in progress at the moment
-     * that it is invoked.  </p>
+     * that it is invoked. If this channel's socket is not bound then this method
+     * will first cause the socket to be bound to an address that is assigned
+     * automatically, as if invoking the {@link #bind bind} method with a
+     * parameter of {@code null}. </p>
      *
      * @param  remote
      *         The remote address to which this channel is to be connected
@@ -207,6 +316,21 @@ public abstract class DatagramChannel
     public abstract DatagramChannel disconnect() throws IOException;
 
     /**
+     * Returns the remote address to which this channel's socket is connected.
+     *
+     * @return  The remote address; {@code null} if the channel's socket is not
+     *          connected
+     *
+     * @throws  ClosedChannelException
+     *          If the channel is closed
+     * @throws  IOException
+     *          If an I/O error occurs
+     *
+     * @since 1.7
+     */
+    public abstract SocketAddress getRemoteAddress() throws IOException;
+
+    /**
      * Receives a datagram via this channel.
      *
      * <p> If a datagram is immediately available, or if this channel is in
@@ -235,7 +359,10 @@ public abstract class DatagramChannel
      * <p> This method may be invoked at any time.  If another thread has
      * already initiated a read operation upon this channel, however, then an
      * invocation of this method will block until the first operation is
-     * complete. </p>
+     * complete. If this channel's socket is not bound then this method will
+     * first cause the socket to be bound to an address that is assigned
+     * automatically, as if invoking the {@link #bind bind} method with a
+     * parameter of {@code null}. </p>
      *
      * @param  dst
      *         The buffer into which the datagram is to be transferred
@@ -292,7 +419,10 @@ public abstract class DatagramChannel
      * <p> This method may be invoked at any time.  If another thread has
      * already initiated a write operation upon this channel, however, then an
      * invocation of this method will block until the first operation is
-     * complete. </p>
+     * complete. If this channel's socket is not bound then this method will
+     * first cause the socket to be bound to an address that is assigned
+     * automatically, as if by invoking the {@link #bind bind) method with a
+     * parameter of {@code null}. </p>
      *
      * @param  src
      *         The buffer containing the datagram to be sent

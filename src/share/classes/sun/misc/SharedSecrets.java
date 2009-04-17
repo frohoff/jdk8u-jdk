@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -44,8 +44,8 @@ public class SharedSecrets {
     private static JavaUtilJarAccess javaUtilJarAccess;
     private static JavaLangAccess javaLangAccess;
     private static JavaIOAccess javaIOAccess;
-    private static JavaIODeleteOnExitAccess javaIODeleteOnExitAccess;
     private static JavaNetAccess javaNetAccess;
+    private static JavaNioAccess javaNioAccess;
     private static JavaIOFileDescriptorAccess javaIOFileDescriptorAccess;
 
     public static JavaUtilJarAccess javaUtilJarAccess() {
@@ -77,6 +77,20 @@ public class SharedSecrets {
         return javaNetAccess;
     }
 
+    public static void setJavaNioAccess(JavaNioAccess jna) {
+        javaNioAccess = jna;
+    }
+
+    public static JavaNioAccess getJavaNioAccess() {
+        if (javaNioAccess == null) {
+            // Ensure java.nio.ByteOrder is initialized; we know that
+            // this class initializes java.nio.Bits that provides the
+            // shared secret.
+            unsafe.ensureClassInitialized(java.nio.ByteOrder.class);
+        }
+        return javaNioAccess;
+    }
+
     public static void setJavaIOAccess(JavaIOAccess jia) {
         javaIOAccess = jia;
     }
@@ -86,17 +100,6 @@ public class SharedSecrets {
             unsafe.ensureClassInitialized(Console.class);
         }
         return javaIOAccess;
-    }
-
-    public static void setJavaIODeleteOnExitAccess(JavaIODeleteOnExitAccess jida) {
-        javaIODeleteOnExitAccess = jida;
-    }
-
-    public static JavaIODeleteOnExitAccess getJavaIODeleteOnExitAccess() {
-        if (javaIODeleteOnExitAccess == null) {
-            unsafe.ensureClassInitialized(File.class);
-        }
-        return javaIODeleteOnExitAccess;
     }
 
     public static void setJavaIOFileDescriptorAccess(JavaIOFileDescriptorAccess jiofda) {

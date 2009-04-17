@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -197,7 +197,7 @@ public class ActionMap implements Serializable {
             return pKeys;
         }
 
-        HashMap        keyMap = new HashMap();
+        HashMap<Object, Object> keyMap = new HashMap<Object, Object>();
         int            counter;
 
         for (counter = keys.length - 1; counter >= 0; counter--) {

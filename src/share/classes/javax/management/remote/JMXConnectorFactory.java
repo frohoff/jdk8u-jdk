@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -268,6 +268,14 @@ public class JMXConnectorFactory {
         return conn;
     }
 
+    private static <K,V> Map<K,V> newHashMap() {
+        return new HashMap<K,V>();
+    }
+
+    private static <K> Map<K,Object> newHashMap(Map<K,?> map) {
+        return new HashMap<K,Object>(map);
+    }
+
     /**
      * <p>Creates a connector client for the connector server at the
      * given address.  The resultant client is not connected until its
@@ -300,22 +308,26 @@ public class JMXConnectorFactory {
     public static JMXConnector newJMXConnector(JMXServiceURL serviceURL,
                                                Map<String,?> environment)
             throws IOException {
-        Map<String, Object> envcopy;
+
+        final Map<String,Object> envcopy;
         if (environment == null)
-            envcopy = new HashMap<String, Object>();
+            envcopy = newHashMap();
         else {
             EnvHelp.checkAttributes(environment);
-            envcopy = new HashMap<String, Object>(environment);
+            envcopy = newHashMap(environment);
         }
 
         final ClassLoader loader = resolveClassLoader(envcopy);
-        final Class<JMXConnectorProvider> targetInterface = JMXConnectorProvider.class;
+        final Class<JMXConnectorProvider> targetInterface =
+                JMXConnectorProvider.class;
         final String protocol = serviceURL.getProtocol();
         final String providerClassName = "ClientProvider";
+        final JMXServiceURL providerURL = serviceURL;
 
-        JMXConnectorProvider provider =
-            getProvider(serviceURL, envcopy, providerClassName,
-                        targetInterface, loader);
+        JMXConnectorProvider provider = getProvider(providerURL, envcopy,
+                                               providerClassName,
+                                               targetInterface,
+                                               loader);
 
         IOException exception = null;
         if (provider == null) {
@@ -326,7 +338,7 @@ public class JMXConnectorFactory {
             if (loader != null) {
                 try {
                     JMXConnector connection =
-                        getConnectorAsService(loader, serviceURL, envcopy);
+                        getConnectorAsService(loader, providerURL, envcopy);
                     if (connection != null)
                         return connection;
                 } catch (JMXProviderException e) {
@@ -335,8 +347,7 @@ public class JMXConnectorFactory {
                     exception = e;
                 }
             }
-            provider =
-                getProvider(protocol, PROTOCOL_PROVIDER_DEFAULT_PACKAGE,
+            provider = getProvider(protocol, PROTOCOL_PROVIDER_DEFAULT_PACKAGE,
                             JMXConnectorFactory.class.getClassLoader(),
                             providerClassName, targetInterface);
         }
@@ -351,12 +362,14 @@ public class JMXConnectorFactory {
             }
         }
 
-        envcopy = Collections.unmodifiableMap(envcopy);
+        final Map<String,Object> fixedenv =
+                Collections.unmodifiableMap(envcopy);
 
-        return provider.newJMXConnector(serviceURL, envcopy);
+        return provider.newJMXConnector(serviceURL, fixedenv);
     }
 
-    private static String resolvePkgs(Map env) throws JMXProviderException {
+    private static String resolvePkgs(Map<String, ?> env)
+            throws JMXProviderException {
 
         Object pkgsObject = null;
 
@@ -365,8 +378,8 @@ public class JMXConnectorFactory {
 
         if (pkgsObject == null)
             pkgsObject =
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
+                AccessController.doPrivileged(new PrivilegedAction<String>() {
+                    public String run() {
                         return System.getProperty(PROTOCOL_PROVIDER_PACKAGES);
                     }
                 });
@@ -423,8 +436,7 @@ public class JMXConnectorFactory {
     static <T> Iterator<T> getProviderIterator(final Class<T> providerClass,
                                                final ClassLoader loader) {
        ServiceLoader<T> serviceLoader =
-                ServiceLoader.load(providerClass,
-                loader);
+                ServiceLoader.load(providerClass, loader);
        return serviceLoader.iterator();
     }
 
@@ -437,9 +449,10 @@ public class JMXConnectorFactory {
                 getProviderIterator(JMXConnectorProvider.class, loader);
         JMXConnector connection;
         IOException exception = null;
-        while(providers.hasNext()) {
+        while (providers.hasNext()) {
+            JMXConnectorProvider provider = providers.next();
             try {
-                connection = providers.next().newJMXConnector(url, map);
+                connection = provider.newJMXConnector(url, map);
                 return connection;
             } catch (JMXProviderException e) {
                 throw e;
@@ -511,7 +524,7 @@ public class JMXConnectorFactory {
         return null;
     }
 
-    static ClassLoader resolveClassLoader(Map environment) {
+    static ClassLoader resolveClassLoader(Map<String, ?> environment) {
         ClassLoader loader = null;
 
         if (environment != null) {
@@ -528,8 +541,8 @@ public class JMXConnectorFactory {
         }
 
         if (loader == null)
-            loader =
-                AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            loader = AccessController.doPrivileged(
+                    new PrivilegedAction<ClassLoader>() {
                         public ClassLoader run() {
                             return
                                 Thread.currentThread().getContextClassLoader();
@@ -542,4 +555,5 @@ public class JMXConnectorFactory {
     private static String protocol2package(String protocol) {
         return protocol.replace('+', '.').replace('-', '_');
     }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -66,7 +66,7 @@ class SynthTextAreaUI extends BasicTextAreaUI implements SynthUI {
     protected void installDefaults() {
         // Installs the text cursor on the component
         super.installDefaults();
-        updateStyle((JTextComponent)getComponent());
+        updateStyle(getComponent());
     }
 
     protected void uninstallDefaults() {

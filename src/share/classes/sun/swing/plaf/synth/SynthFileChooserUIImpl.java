@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -70,8 +70,6 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
     private FilePane filePane;
     private JToggleButton listViewButton;
     private JToggleButton detailsViewButton;
-
-    private boolean useShellFolder;
 
     private boolean readOnly;
 
@@ -185,10 +183,6 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
         public ListSelectionListener createListSelectionListener() {
             return SynthFileChooserUIImpl.this.createListSelectionListener(getFileChooser());
         }
-
-        public boolean usesShellFolder() {
-            return useShellFolder;
-        }
     }
 
     protected void installDefaults(JFileChooser fc) {
@@ -200,8 +194,6 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
         super.installComponents(fc);
 
         SynthContext context = getContext(fc, ENABLED);
-
-        updateUseShellFolder();
 
         fc.setLayout(new BorderLayout(0, 11));
 
@@ -431,20 +423,6 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
         fc.removePropertyChangeListener(JFileChooser.FILE_SELECTION_MODE_CHANGED_PROPERTY, modeListener);
         super.uninstallListeners(fc);
     }
-
-    private void updateUseShellFolder() {
-        // Decide whether to use the ShellFolder class to populate shortcut
-        // panel and combobox.
-        JFileChooser fc = getFileChooser();
-        Boolean prop =
-            (Boolean)fc.getClientProperty("FileChooser.useShellFolder");
-        if (prop != null) {
-            useShellFolder = prop.booleanValue();
-        } else {
-            useShellFolder = fc.getFileSystemView().equals(FileSystemView.getFileSystemView());
-        }
-    }
-
 
     private String fileNameString(File file) {
         if (file == null) {
@@ -735,7 +713,7 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
      * Data model for a type-face selection combo-box.
      */
     protected class DirectoryComboBoxModel extends AbstractListModel implements ComboBoxModel {
-        Vector directories = new Vector();
+        Vector<File> directories = new Vector<File>();
         int[] depths = null;
         File selectedDirectory = null;
         JFileChooser chooser = getFileChooser();
@@ -761,6 +739,8 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
                 return;
             }
 
+            boolean useShellFolder = FilePane.usesShellFolder(chooser);
+
             int oldSize = directories.size();
             directories.clear();
             if (oldSize > 0) {
@@ -778,7 +758,7 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
             // Get the canonical (full) path. This has the side
             // benefit of removing extraneous chars from the path,
             // for example /foo/bar/ becomes /foo/bar
-            File canonical = null;
+            File canonical;
             try {
                 canonical = directory.getCanonicalFile();
             } catch (IOException e) {
@@ -791,7 +771,7 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
                 File sf = useShellFolder ? ShellFolder.getShellFolder(canonical)
                                          : canonical;
                 File f = sf;
-                Vector path = new Vector(10);
+                Vector<File> path = new Vector<File>(10);
                 do {
                     path.addElement(f);
                 } while ((f = f.getParentFile()) != null);
@@ -799,7 +779,7 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
                 int pathCount = path.size();
                 // Insert chain at appropriate place in vector
                 for (int i = 0; i < pathCount; i++) {
-                    f = (File)path.get(i);
+                    f = path.get(i);
                     if (directories.contains(f)) {
                         int topIndex = directories.indexOf(f);
                         for (int j = i-1; j >= 0; j--) {
@@ -818,12 +798,12 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
         private void calculateDepths() {
             depths = new int[directories.size()];
             for (int i = 0; i < depths.length; i++) {
-                File dir = (File)directories.get(i);
+                File dir = directories.get(i);
                 File parent = dir.getParentFile();
                 depths[i] = 0;
                 if (parent != null) {
                     for (int j = i-1; j >= 0; j--) {
-                        if (parent.equals((File)directories.get(j))) {
+                        if (parent.equals(directories.get(j))) {
                             depths[i] = depths[j] + 1;
                             break;
                         }
@@ -940,8 +920,8 @@ public class SynthFileChooserUIImpl extends SynthFileChooserUI {
             FileFilter currentFilter = getFileChooser().getFileFilter();
             boolean found = false;
             if(currentFilter != null) {
-                for(int i=0; i < filters.length; i++) {
-                    if(filters[i] == currentFilter) {
+                for (FileFilter filter : filters) {
+                    if (filter == currentFilter) {
                         found = true;
                     }
                 }

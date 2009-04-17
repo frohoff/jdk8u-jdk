@@ -1,5 +1,5 @@
 #
-# Copyright 1996-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1996-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -67,11 +67,6 @@ ifneq ($(PLATFORM), windows)
   ODBC_FAKE_LIBRARIES = $(ODBC_LIBRARY_LOCATION)/libodbcinst.so $(ODBC_LIBRARY_LOCATION)/libodbc.so
   # Make sure they get created early.
   INIT += $(ODBC_FAKE_LIBRARIES)
-endif
-
-ifeq ($(PLATFORM),windows)
-  # Files built here do not compile with warning level 3 if warnings are fatal
-  COMPILER_WARNINGS_FATAL=false
 endif
 
 #

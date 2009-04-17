@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2001 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -107,7 +107,7 @@ class Entity implements DTDConstants {
     }
 
 
-    static Hashtable entityTypes = new Hashtable();
+    static Hashtable<String, Integer> entityTypes = new Hashtable<String, Integer>();
 
     static {
         entityTypes.put("PUBLIC", Integer.valueOf(PUBLIC));
@@ -133,7 +133,7 @@ class Entity implements DTDConstants {
      *   to "CDATA", if none exists
      */
     public static int name2type(String nm) {
-        Integer i = (Integer)entityTypes.get(nm);
+        Integer i = entityTypes.get(nm);
         return (i == null) ? CDATA : i.intValue();
     }
 }

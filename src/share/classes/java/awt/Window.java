@@ -53,6 +53,7 @@ import sun.awt.AppContext;
 import sun.awt.CausedFocusEvent;
 import sun.awt.SunToolkit;
 import sun.awt.util.IdentityArrayList;
+import sun.java2d.Disposer;
 import sun.java2d.pipe.Region;
 import sun.security.action.GetPropertyAction;
 import sun.security.util.SecurityConstants;
@@ -409,8 +410,6 @@ public class Window extends Container implements Accessible {
         }
 
         modalExclusionType = Dialog.ModalExclusionType.NO_EXCLUDE;
-
-        sun.java2d.Disposer.addRecord(anchor, new WindowDisposerRecord(appContext, this));
     }
 
     /**
@@ -540,6 +539,10 @@ public class Window extends Container implements Accessible {
         if (owner != null) {
             owner.addOwnedWindow(weakThis);
         }
+
+        // Fix for 6758673: this call is moved here from init(gc), because
+        // WindowDisposerRecord requires a proper value of parent field.
+        Disposer.addRecord(anchor, new WindowDisposerRecord(appContext, this));
     }
 
     /**
@@ -3145,9 +3148,7 @@ public class Window extends Container implements Accessible {
         Component previousComp = temporaryLostComponent;
         // Check that "component" is an acceptable focus owner and don't store it otherwise
         // - or later we will have problems with opposite while handling  WINDOW_GAINED_FOCUS
-        if (component == null
-            || (component.isDisplayable() && component.isVisible() && component.isEnabled() && component.isFocusable()))
-        {
+        if (component == null || component.canBeFocusOwner()) {
             temporaryLostComponent = component;
         } else {
             temporaryLostComponent = null;

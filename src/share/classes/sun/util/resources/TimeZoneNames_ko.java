@@ -1,5 +1,5 @@
 /*
- * Portions Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Portions Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -141,6 +141,8 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
                                      "\ub9d0\ub808\uc774\uc2dc\uc544 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "MYST"};
         String NORONHA[] = new String[] {"Fernando de Noronha \uc2dc\uac04", "FNT",
                                          "Fernando de Noronha \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "FNST"};
+        String NPT[] = new String[] {"\ub124\ud314 \uc2dc\uac04", "NPT",
+                                      "\ub124\ud314 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "NPST"};
         String NST[] = new String[] {"\ub274\ud380\ub4e4\ub79c\ub4dc \ud45c\uc900\uc2dc", "NST",
                                      "\ub274\ud380\ub4e4\ub79c\ub4dc \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "NDT"};
         String NZST[] = new String[] {"\ub274\uc9c8\ub79c\ub4dc \ud45c\uc900\uc2dc", "NZST",
@@ -151,6 +153,8 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
                                      "\ud30c\ud0a4\uc2a4\ud0c4 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "PKST"};
         String PST[] = new String[] {"\ud0dc\ud3c9\uc591 \ud45c\uc900\uc2dc", "PST",
                                      "\ud0dc\ud3c9\uc591 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "PDT"};
+        String RST[] = new String[] {"\ub3d9\ubd80 \ud45c\uc900\uc2dc", "EST",
+                                     "\uc911\ubd80 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "CDT"};
         String SAST[] = new String[] {"\ub0a8\uc544\ud504\ub9ac\uce74 \ud45c\uc900\uc2dc", "SAST",
                                       "\ub0a8\uc544\ud504\ub9ac\uce74 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "SAST"};
         String SBT[] = new String[] {"\uc194\ub85c\ubaac \uad70\ub3c4 \uc2dc\uac04", "SBT",
@@ -290,7 +294,9 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
             {"America/Argentina/La_Rioja", AGT},
             {"America/Argentina/Mendoza", AGT},
             {"America/Argentina/Rio_Gallegos", AGT},
+            {"America/Argentina/Salta", AGT},
             {"America/Argentina/San_Juan", AGT},
+            {"America/Argentina/San_Luis", AGT},
             {"America/Argentina/Tucuman", AGT},
             {"America/Argentina/Ushuaia", AGT},
             {"America/Aruba", AST},
@@ -329,7 +335,7 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
             {"America/Detroit", EST},
             {"America/Dominica", AST},
             {"America/Edmonton", MST},
-            {"America/Eirunepe", ACT},
+            {"America/Eirunepe", AMT},
             {"America/El_Salvador", CST},
             {"America/Ensenada", PST},
             {"America/Fort_Wayne", EST},
@@ -372,6 +378,7 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
             {"America/Maceio", BRT},
             {"America/Managua", CST},
             {"America/Manaus", AMT},
+            {"America/Marigot", AST},
             {"America/Martinique", AST},
             {"America/Mazatlan", MST},
             {"America/Mendoza", AGT},
@@ -398,21 +405,23 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
                                                  "\uc218\ub9ac\ub0a8 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "SRST"}},
             {"America/Port-au-Prince", EST},
             {"America/Port_of_Spain", AST},
-            {"America/Porto_Acre", ACT},
+            {"America/Porto_Acre", AMT},
             {"America/Porto_Velho", AMT},
             {"America/Puerto_Rico", AST},
             {"America/Rainy_River", CST},
             {"America/Rankin_Inlet", CST},
             {"America/Recife", BRT},
             {"America/Regina", CST},
-            {"America/Resolute", EST},
-            {"America/Rio_Branco", ACT},
+            {"America/Resolute", RST},
+            {"America/Rio_Branco", AMT},
             {"America/Rosario", AGT},
+            {"America/Santarem", BRT},
             {"America/Santiago", CLT},
             {"America/Santo_Domingo", AST},
             {"America/Sao_Paulo", BRT},
             {"America/Scoresbysund", EGT},
             {"America/Shiprock", MST},
+            {"America/St_Barthelemy", AST},
             {"America/St_Kitts", AST},
             {"America/St_Lucia", AST},
             {"America/St_Thomas", AST},
@@ -485,6 +494,7 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
                                             "\ud0c0\uc9c0\ud0a4\uc2a4\ud0c4 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "TJST"}},
             {"Asia/Gaza", EET},
             {"Asia/Harbin", CTT},
+            {"Asia/Ho_Chi_Minh", ICT},
             {"Asia/Hong_Kong", HKT},
             {"Asia/Hovd", new String[] {"Hovd \uc2dc\uac04", "HOVT",
                                         "Hovd \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "HOVST"}},
@@ -500,8 +510,9 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
                                             "\ud398\ud2b8\ub85c\ud30c\ube14\ub85c\ud504\uc2a4\ud06c-\uce84\ucc28\uce20\ud0a4 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "PETST"}},
             {"Asia/Karachi", PKT},
             {"Asia/Kashgar", CTT},
-            {"Asia/Katmandu", new String[] {"\ub124\ud314 \uc2dc\uac04", "NPT",
-                                            "\ub124\ud314 \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "NPST"}},
+            {"Asia/Kathmandu", NPT},
+            {"Asia/Katmandu", NPT},
+            {"Asia/Kolkata", IST},
             {"Asia/Krasnoyarsk", new String[] {"\ud06c\ub77c\uc2a4\ub178\uc57c\ub974\uc2a4\ud06c \uc2dc\uac04", "KRAT",
                                                "\ud06c\ub77c\uc2a4\ub178\uc57c\ub974\uc2a4\ud06c \uc77c\uad11\uc808\uc57d\uc2dc\uac04", "KRAST"}},
             {"Asia/Kuala_Lumpur", MYT},
@@ -599,7 +610,7 @@ public final class TimeZoneNames_ko extends TimeZoneNamesBundle {
             {"Australia/Yancowinna", BROKEN_HILL},
             {"BET", BRT},
             {"BST", BDT},
-            {"Brazil/Acre", ACT},
+            {"Brazil/Acre", AMT},
             {"Brazil/DeNoronha", NORONHA},
             {"Brazil/East", BRT},
             {"Brazil/West", AMT},

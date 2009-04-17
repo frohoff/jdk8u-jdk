@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -38,10 +38,9 @@
 #include    "JavaExceptions.h"
 
 #include    "EncodingSupport.h"
-#include    "FileSystemSupport.h"               /* MAXPATHLEN */
+#include    "FileSystemSupport.h"    /* For MAXPATHLEN & uintptr_t */
 
 #include    "sun_instrument_InstrumentationImpl.h"
-#include    "typedefs.h"
 
 /*
  *  The JPLISAgent manages the initialization all of the Java programming language Agents.

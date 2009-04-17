@@ -1,5 +1,5 @@
 #
-# Copyright 1998-2006 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -33,7 +33,7 @@ include $(BUILDDIR)/common/Defs.gmk
 # Files
 #
 include FILES.gmk
-AUTO_FILES_JAVA_DIRS = javax/swing sun/swing
+AUTO_FILES_JAVA_DIRS = javax/swing sun/swing com/sun/java/swing
 AUTO_JAVA_PRUNE = plaf
 
 SUBDIRS = html32dtd plaf

@@ -1,5 +1,5 @@
 /*
- * Copyright 2005-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2005-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -114,7 +114,7 @@ public class AccessibleMethod {
 
     /** The action used to fetch the method and make it accessible */
     private static class AccessMethodAction implements PrivilegedExceptionAction<Method> {
-        private final Class klass;
+        private final Class<?> klass;
         private final String methodName;
         private final Class[] paramTypes;
 

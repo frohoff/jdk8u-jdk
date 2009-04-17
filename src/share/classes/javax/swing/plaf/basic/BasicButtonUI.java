@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -237,7 +237,7 @@ public class BasicButtonUI extends ButtonUI{
 
             /* the fallback icon should be based on the selected state */
             if (model.isSelected()) {
-                selectedIcon = (Icon) b.getSelectedIcon();
+                selectedIcon = b.getSelectedIcon();
                 if (selectedIcon != null) {
                     icon = selectedIcon;
                 }
@@ -245,31 +245,31 @@ public class BasicButtonUI extends ButtonUI{
 
             if(!model.isEnabled()) {
                 if(model.isSelected()) {
-                   tmpIcon = (Icon) b.getDisabledSelectedIcon();
+                   tmpIcon = b.getDisabledSelectedIcon();
                    if (tmpIcon == null) {
                        tmpIcon = selectedIcon;
                    }
                 }
 
                 if (tmpIcon == null) {
-                    tmpIcon = (Icon) b.getDisabledIcon();
+                    tmpIcon = b.getDisabledIcon();
                 }
             } else if(model.isPressed() && model.isArmed()) {
-                tmpIcon = (Icon) b.getPressedIcon();
+                tmpIcon = b.getPressedIcon();
                 if(tmpIcon != null) {
                     // revert back to 0 offset
                     clearTextShiftOffset();
                 }
             } else if(b.isRolloverEnabled() && model.isRollover()) {
                 if(model.isSelected()) {
-                   tmpIcon = (Icon) b.getRolloverSelectedIcon();
+                   tmpIcon = b.getRolloverSelectedIcon();
                    if (tmpIcon == null) {
                        tmpIcon = selectedIcon;
                    }
                 }
 
                 if (tmpIcon == null) {
-                    tmpIcon = (Icon) b.getRolloverIcon();
+                    tmpIcon = b.getRolloverIcon();
                 }
             }
 
@@ -451,9 +451,9 @@ public class BasicButtonUI extends ButtonUI{
         MouseMotionListener[] listeners = b.getMouseMotionListeners();
 
         if (listeners != null) {
-            for (int counter = 0; counter < listeners.length; counter++) {
-                if (listeners[counter] instanceof BasicButtonListener) {
-                    return (BasicButtonListener)listeners[counter];
+            for (MouseMotionListener listener : listeners) {
+                if (listener instanceof BasicButtonListener) {
+                    return (BasicButtonListener) listener;
                 }
             }
         }

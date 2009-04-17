@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -385,16 +385,16 @@ public class EventHandler implements InvocationHandler {
         try {
             Method getter = null;
             if (target != null) {
-                getter = ReflectionUtils.getMethod(target.getClass(),
+                getter = Statement.getMethod(target.getClass(),
                                       "get" + NameGenerator.capitalize(first),
                                       new Class[]{});
                 if (getter == null) {
-                    getter = ReflectionUtils.getMethod(target.getClass(),
+                    getter = Statement.getMethod(target.getClass(),
                                    "is" + NameGenerator.capitalize(first),
                                    new Class[]{});
                 }
                 if (getter == null) {
-                    getter = ReflectionUtils.getMethod(target.getClass(), first, new Class[]{});
+                    getter = Statement.getMethod(target.getClass(), first, new Class[]{});
                 }
             }
             if (getter == null) {
@@ -404,7 +404,7 @@ public class EventHandler implements InvocationHandler {
             Object newTarget = MethodUtil.invoke(getter, target, new Object[]{});
             return applyGetters(newTarget, rest);
         }
-        catch (Throwable e) {
+        catch (Exception e) {
             throw new RuntimeException("Failed to call method: " + first +
                                        " on " + target, e);
         }
@@ -462,10 +462,10 @@ public class EventHandler implements InvocationHandler {
                     target = applyGetters(target, action.substring(0, lastDot));
                     action = action.substring(lastDot + 1);
                 }
-                Method targetMethod = ReflectionUtils.getMethod(
+                Method targetMethod = Statement.getMethod(
                              target.getClass(), action, argTypes);
                 if (targetMethod == null) {
-                    targetMethod = ReflectionUtils.getMethod(target.getClass(),
+                    targetMethod = Statement.getMethod(target.getClass(),
                              "set" + NameGenerator.capitalize(action), argTypes);
                 }
                 if (targetMethod == null) {

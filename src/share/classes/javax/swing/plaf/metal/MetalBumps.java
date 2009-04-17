@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2003 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -49,7 +49,7 @@ class MetalBumps implements Icon {
     protected Color shadowColor;
     protected Color backColor;
 
-    protected static Vector buffers = new Vector();
+    protected static Vector<BumpBuffer> buffers = new Vector<BumpBuffer>();
     protected BumpBuffer buffer;
 
     public MetalBumps( Dimension bumpArea ) {
@@ -81,10 +81,7 @@ class MetalBumps implements Icon {
         }
         BumpBuffer result = null;
 
-        Enumeration elements = buffers.elements();
-
-        while ( elements.hasMoreElements() ) {
-            BumpBuffer aBuffer = (BumpBuffer)elements.nextElement();
+        for (BumpBuffer aBuffer : buffers) {
             if ( aBuffer.hasSameConfiguration(gc, aTopColor, aShadowColor,
                                               aBackColor)) {
                 result = aBuffer;
@@ -120,8 +117,7 @@ class MetalBumps implements Icon {
 
     public void paintIcon( Component c, Graphics g, int x, int y ) {
         GraphicsConfiguration gc = (g instanceof Graphics2D) ?
-                                     (GraphicsConfiguration)((Graphics2D)g).
-                                     getDeviceConfiguration() : null;
+                ((Graphics2D) g).getDeviceConfiguration() : null;
 
         buffer = getBuffer(gc, topColor, shadowColor, backColor);
 

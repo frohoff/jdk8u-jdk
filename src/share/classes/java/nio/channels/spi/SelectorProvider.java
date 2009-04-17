@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2009 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,10 +25,8 @@
 
 package java.nio.channels.spi;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.ProtocolFamily;
 import java.nio.channels.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -91,8 +89,8 @@ public abstract class SelectorProvider {
         if (cn == null)
             return false;
         try {
-            Class c = Class.forName(cn, true,
-                                    ClassLoader.getSystemClassLoader());
+            Class<?> c = Class.forName(cn, true,
+                                       ClassLoader.getSystemClassLoader());
             provider = (SelectorProvider)c.newInstance();
             return true;
         } catch (ClassNotFoundException x) {
@@ -190,7 +188,25 @@ public abstract class SelectorProvider {
         throws IOException;
 
     /**
-     * Opens a pipe.  </p>
+     * Opens a datagram channel.
+     *
+     * @param   family
+     *          The protocol family
+     *
+     * @return  A new datagram channel
+     *
+     * @throws  UnsupportedOperationException
+     *          If the specified protocol family is not supported
+     * @throws  IOException
+     *          If an I/O error occurs
+     *
+     * @since 1.7
+     */
+    public abstract DatagramChannel openDatagramChannel(ProtocolFamily family)
+        throws IOException;
+
+    /**
+     * Opens a pipe. </p>
      *
      * @return  The new pipe
      */

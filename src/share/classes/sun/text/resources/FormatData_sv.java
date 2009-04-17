@@ -1,5 +1,5 @@
 /*
- * Portions Copyright 1997-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Portions Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -102,6 +102,12 @@ public class FormatData_sv extends ListResourceBundle {
                     "to", // abb Thursday
                     "fr", // abb Friday
                     "l\u00f6" // abb Saturday
+                }
+            },
+            { "AmPmMarkers",
+                new String[] {
+                    "fm", // am marker
+                    "em" // pm marker
                 }
             },
             { "NumberElements",

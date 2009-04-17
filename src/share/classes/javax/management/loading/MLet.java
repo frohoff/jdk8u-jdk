@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1154,21 +1154,30 @@ public class MLet extends java.net.URLClassLoader
       */
      private synchronized String loadLibraryAsResource(String libname) {
          try {
-             InputStream is = getResourceAsStream(libname.replace(File.separatorChar,'/'));
+             InputStream is = getResourceAsStream(
+                     libname.replace(File.separatorChar,'/'));
              if (is != null) {
-                 File directory = new File(libraryDirectory);
-                 directory.mkdirs();
-                 File file = File.createTempFile(libname + ".", null, directory);
-                 file.deleteOnExit();
-                 FileOutputStream fileOutput = new FileOutputStream(file);
-                 int c;
-                 while ((c = is.read()) != -1) {
-                     fileOutput.write(c);
-                 }
-                 is.close();
-                 fileOutput.close();
-                 if (file.exists()) {
-                     return file.getAbsolutePath();
+                 try {
+                     File directory = new File(libraryDirectory);
+                     directory.mkdirs();
+                     File file = File.createTempFile(libname + ".", null,
+                             directory);
+                     file.deleteOnExit();
+                     FileOutputStream fileOutput = new FileOutputStream(file);
+                     try {
+                         byte[] buf = new byte[4096];
+                         int n;
+                         while ((n = is.read(buf)) >= 0) {
+                            fileOutput.write(buf, 0, n);
+                         }
+                     } finally {
+                         fileOutput.close();
+                     }
+                     if (file.exists()) {
+                         return file.getAbsolutePath();
+                     }
+                 } finally {
+                     is.close();
                  }
              }
          } catch (Exception e) {
@@ -1283,7 +1292,7 @@ public class MLet extends java.net.URLClassLoader
          if (c != null) {
             try {
                 Constructor<?> cons =
-                    c.getConstructor(new Class[] {String.class});
+                    c.getConstructor(String.class);
                 Object[] oo = new Object[1];
                 oo[0]=param;
                 return(cons.newInstance(oo));

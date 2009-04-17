@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,7 +32,7 @@ import sun.misc.Unsafe;
  * An instance of this class is used to generate a stream of
  * pseudorandom numbers. The class uses a 48-bit seed, which is
  * modified using a linear congruential formula. (See Donald Knuth,
- * <i>The Art of Computer Programming, Volume 3</i>, Section 3.2.1.)
+ * <i>The Art of Computer Programming, Volume 2</i>, Section 3.2.1.)
  * <p>
  * If two instances of {@code Random} are created with the same
  * seed, and the same sequence of method calls is made for each, they

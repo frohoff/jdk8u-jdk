@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -277,7 +277,7 @@ public class JDialog extends Dialog implements WindowConstants,
               title, modal);
         if (owner == null) {
             WindowListener ownerShutdownListener =
-                (WindowListener)SwingUtilities.getSharedOwnerFrameShutdownListener();
+                    SwingUtilities.getSharedOwnerFrameShutdownListener();
             addWindowListener(ownerShutdownListener);
         }
         dialogInit();
@@ -329,7 +329,7 @@ public class JDialog extends Dialog implements WindowConstants,
               title, modal, gc);
         if (owner == null) {
             WindowListener ownerShutdownListener =
-                (WindowListener)SwingUtilities.getSharedOwnerFrameShutdownListener();
+                    SwingUtilities.getSharedOwnerFrameShutdownListener();
             addWindowListener(ownerShutdownListener);
         }
         dialogInit();

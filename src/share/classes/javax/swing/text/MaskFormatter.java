@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2003 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -446,7 +446,7 @@ public class MaskFormatter extends DefaultFormatter {
      */
     private Object stringToValue(String value, boolean completeMatch) throws
                          ParseException {
-        int errorOffset = -1;
+        int errorOffset;
 
         if ((errorOffset = getInvalidOffset(value, completeMatch)) == -1) {
             if (!getValueContainsLiteralCharacters()) {
@@ -498,8 +498,8 @@ public class MaskFormatter extends DefaultFormatter {
      */
     private void updateInternalMask() throws ParseException {
         String mask = getMask();
-        ArrayList fixed = new ArrayList();
-        ArrayList temp = fixed;
+        ArrayList<MaskCharacter> fixed = new ArrayList<MaskCharacter>();
+        ArrayList<MaskCharacter> temp = fixed;
 
         if (mask != null) {
             for (int counter = 0, maxCounter = mask.length();

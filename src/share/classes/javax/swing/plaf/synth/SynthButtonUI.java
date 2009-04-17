@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -262,7 +262,7 @@ class SynthButtonUI extends BasicButtonUI implements
      * Returns the default icon. This should NOT callback
      * to the JComponent.
      *
-     * @param b AbstractButton the iocn is associated with
+     * @param b AbstractButton the icon is associated with
      * @return default icon
      */
 
@@ -445,9 +445,7 @@ class SynthButtonUI extends BasicButtonUI implements
      * Returns the Icon used in calculating the pref/min/max size.
      */
     protected Icon getSizingIcon(AbstractButton b) {
-        // NOTE: this is slightly different than BasicButtonUI, where it
-        // would just use getIcon, but this should be ok.
-        Icon icon = (b.isEnabled()) ? b.getIcon() : b.getDisabledIcon();
+        Icon icon = getEnabledIcon(b, b.getIcon());
         if (icon == null) {
             icon = getDefaultIcon(b);
         }

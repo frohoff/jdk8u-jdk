@@ -1,5 +1,5 @@
 #
-# Copyright 1999-2005 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -35,13 +35,6 @@ PRODUCT = jbug
 FILES_m = mapfile-vers
 
 include $(BUILDDIR)/common/Defs.gmk
-
-# 64-bit windows does not build at -W3 if warnings are fatal
-ifeq ($(PLATFORM), windows)
-  ifeq ($(ARCH_DATA_MODEL), 64)
-    COMPILER_WARNINGS_FATAL=false
-  endif
-endif
 
 FILES_c = \
         SharedMemoryTransport.c \

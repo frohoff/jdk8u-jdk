@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -124,7 +124,7 @@ class Metacity implements SynthConstants {
         }
 
         // Initialize constants
-        variables = new HashMap();
+        variables = new HashMap<String, Integer>();
         NodeList nodes = xmlDoc.getElementsByTagName("constant");
         int n = nodes.getLength();
         for (int i = 0; i < n; i++) {
@@ -144,14 +144,14 @@ class Metacity implements SynthConstants {
         }
 
         // Cache frame geometries
-        frameGeometries = new HashMap();
+        frameGeometries = new HashMap<String, Map<String, Object>>();
         nodes = xmlDoc.getElementsByTagName("frame_geometry");
         n = nodes.getLength();
         for (int i = 0; i < n; i++) {
             Node node = nodes.item(i);
             String name = getStringAttr(node, "name");
             if (name != null) {
-                HashMap<String, Object> gm = new HashMap();
+                HashMap<String, Object> gm = new HashMap<String, Object>();
                 frameGeometries.put(name, gm);
 
                 String parentGM = getStringAttr(node, "parent");
@@ -458,7 +458,7 @@ class Metacity implements SynthConstants {
 
 
 
-    private static class Privileged implements PrivilegedAction {
+    private static class Privileged implements PrivilegedAction<Object> {
         private static int GET_THEME_DIR  = 0;
         private static int GET_USER_THEME = 1;
         private static int GET_IMAGE      = 2;
@@ -598,7 +598,7 @@ class Metacity implements SynthConstants {
         g2.setComposite(oldComp);
     }
 
-    private HashMap<String, Image> images = new HashMap();
+    private HashMap<String, Image> images = new HashMap<String, Image>();
 
     protected Image getImage(String key, Color c) {
         Image image = images.get(key+"-"+c.getRGB());
@@ -770,33 +770,56 @@ class Metacity implements SynthConstants {
             JComponent maximizeButton = findChild(titlePane, "InternalFrameTitlePane.maximizeButton");
             JComponent closeButton    = findChild(titlePane, "InternalFrameTitlePane.closeButton");
 
-            int buttonGap = 0;
-
             Insets button_border = (Insets)gm.get("button_border");
             Dimension buttonDim = calculateButtonSize(titlePane);
 
-            int x = getInt("left_titlebar_edge");
             int y = (button_border != null) ? button_border.top : 0;
+            if (titlePaneParent.getComponentOrientation().isLeftToRight()) {
+                int x = getInt("left_titlebar_edge");
 
-            menuButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                menuButton.setBounds(x, y, buttonDim.width, buttonDim.height);
 
-            x = w - buttonDim.width - getInt("right_titlebar_edge");
-            if (button_border != null) {
-                x -= button_border.right;
-            }
+                x = w - buttonDim.width - getInt("right_titlebar_edge");
+                if (button_border != null) {
+                    x -= button_border.right;
+                }
 
-            if (frame.isClosable()) {
-                closeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
-                x -= (buttonDim.width + buttonGap);
-            }
+                if (frame.isClosable()) {
+                    closeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                    x -= buttonDim.width;
+                }
 
-            if (frame.isMaximizable()) {
-                maximizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
-                x -= (buttonDim.width + buttonGap);
-            }
+                if (frame.isMaximizable()) {
+                    maximizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                    x -= buttonDim.width;
+                }
 
-            if (frame.isIconifiable()) {
-                minimizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                if (frame.isIconifiable()) {
+                    minimizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                }
+            } else {
+                int x = w - buttonDim.width - getInt("right_titlebar_edge");
+
+                menuButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+
+                x = getInt("left_titlebar_edge");
+                if (button_border != null) {
+                    x += button_border.left;
+                }
+
+                if (frame.isClosable()) {
+                    closeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                    x += buttonDim.width;
+                }
+
+                if (frame.isMaximizable()) {
+                    maximizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                    x += buttonDim.width;
+                }
+
+                if (frame.isIconifiable()) {
+                    minimizeButton.setBounds(x, y, buttonDim.width, buttonDim.height);
+                }
             }
         }
     } // end TitlePaneLayout
@@ -973,10 +996,8 @@ class Metacity implements SynthConstants {
         String title = jif.getTitle();
         if (title != null) {
             FontMetrics fm = SwingUtilities2.getFontMetrics(jif, g);
-            if (jif.getComponentOrientation().isLeftToRight()) {
-                title = SwingUtilities2.clipStringIfNecessary(jif, fm, title,
-                             calculateTitleTextWidth(g, jif));
-            }
+            title = SwingUtilities2.clipStringIfNecessary(jif, fm, title,
+                         calculateTitleArea(jif).width);
             g.setColor(color);
             SwingUtilities2.drawString(jif, g, title, x, y + fm.getAscent());
         }
@@ -1010,9 +1031,10 @@ class Metacity implements SynthConstants {
         JComponent titlePane = findChild(jif, "InternalFrame.northPane");
         Dimension buttonDim = calculateButtonSize(titlePane);
         Insets title_border = (Insets)frameGeometry.get("title_border");
-        Rectangle r = new Rectangle();
+        Insets button_border = (Insets)getFrameGeometry().get("button_border");
 
-        r.x = getInt("left_titlebar_edge") + buttonDim.width;
+        Rectangle r = new Rectangle();
+        r.x = getInt("left_titlebar_edge");
         r.y = 0;
         r.height = titlePane.getHeight();
         if (title_border != null) {
@@ -1021,15 +1043,36 @@ class Metacity implements SynthConstants {
             r.height -= (title_border.top + title_border.bottom);
         }
 
-        r.width = titlePane.getWidth() - r.x - getInt("right_titlebar_edge");
-        if (jif.isClosable()) {
-            r.width -= buttonDim.width;
-        }
-        if (jif.isMaximizable()) {
-            r.width -= buttonDim.width;
-        }
-        if (jif.isIconifiable()) {
-            r.width -= buttonDim.width;
+        if (titlePane.getParent().getComponentOrientation().isLeftToRight()) {
+            r.x += buttonDim.width;
+            if (button_border != null) {
+                r.x += button_border.left;
+            }
+            r.width = titlePane.getWidth() - r.x - getInt("right_titlebar_edge");
+            if (jif.isClosable()) {
+                r.width -= buttonDim.width;
+            }
+            if (jif.isMaximizable()) {
+                r.width -= buttonDim.width;
+            }
+            if (jif.isIconifiable()) {
+                r.width -= buttonDim.width;
+            }
+        } else {
+            if (jif.isClosable()) {
+                r.x += buttonDim.width;
+            }
+            if (jif.isMaximizable()) {
+                r.x += buttonDim.width;
+            }
+            if (jif.isIconifiable()) {
+                r.x += buttonDim.width;
+            }
+            r.width = titlePane.getWidth() - r.x - getInt("right_titlebar_edge")
+                    - buttonDim.width;
+            if (button_border != null) {
+                r.x -= button_border.right;
+            }
         }
         if (title_border != null) {
             r.width -= title_border.right;
@@ -1487,8 +1530,8 @@ class Metacity implements SynthConstants {
                 DocumentBuilderFactory.newInstance().newDocumentBuilder();
         }
         InputStream inputStream =
-            (InputStream)AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
+            AccessController.doPrivileged(new PrivilegedAction<InputStream>() {
+                public InputStream run() {
                     try {
                         return new BufferedInputStream(xmlFile.openStream());
                     } catch (IOException ex) {
@@ -1508,7 +1551,7 @@ class Metacity implements SynthConstants {
     protected Node[] getNodesByName(Node parent, String name) {
         NodeList nodes = parent.getChildNodes(); // ElementNode
         int n = nodes.getLength();
-        ArrayList<Node> list = new ArrayList();
+        ArrayList<Node> list = new ArrayList<Node>();
         for (int i=0; i < n; i++) {
             Node node = nodes.item(i);
             if (name.equals(node.getNodeName())) {
@@ -1560,7 +1603,7 @@ class Metacity implements SynthConstants {
                             String aValue = attrs[a * 2 + 1];
                             Node attr = nodeAttrs.getNamedItem(aName);
                             if (attr == null ||
-                                aValue != null && !aValue.equals((String)attr.getNodeValue())) {
+                                aValue != null && !aValue.equals(attr.getNodeValue())) {
                                 matches = false;
                                 break;
                             }
@@ -1599,7 +1642,7 @@ class Metacity implements SynthConstants {
 
     protected String getStringAttr(NamedNodeMap attrs, String name) {
         Node item = attrs.getNamedItem(name);
-        return (item != null) ? (String)item.getNodeValue() : null;
+        return (item != null) ? item.getNodeValue() : null;
     }
 
     protected boolean getBooleanAttr(Node node, String name, boolean fallback) {

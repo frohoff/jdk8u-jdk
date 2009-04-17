@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2002 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -67,13 +67,18 @@ class HRuleView extends View  {
             // use ALIGN_CENTER by default, so we check if the alignment
             // attribute is actually defined
             if (attr.getAttribute(StyleConstants.Alignment) != null) {
-            alignment = StyleConstants.getAlignment(attr);
+                alignment = StyleConstants.getAlignment(attr);
             }
 
             noshade = (String)eAttr.getAttribute(HTML.Attribute.NOSHADE);
             Object value = eAttr.getAttribute(HTML.Attribute.SIZE);
-            if (value != null && (value instanceof String))
-                size = Integer.parseInt((String)value);
+            if (value != null && (value instanceof String)) {
+                try {
+                    size = Integer.parseInt((String)value);
+                } catch (NumberFormatException e) {
+                    size = 1;
+                }
+            }
             value = attr.getAttribute(CSS.Attribute.WIDTH);
             if (value != null && (value instanceof CSS.LengthValue)) {
                 widthValue = (CSS.LengthValue)value;

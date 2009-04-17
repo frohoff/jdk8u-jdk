@@ -1,5 +1,5 @@
 /*
- * Copyright 1999 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -35,7 +35,7 @@ import java.util.Vector;
  */
 public class LayoutQueue {
 
-    Vector tasks;
+    Vector<Runnable> tasks;
     Thread worker;
 
     static LayoutQueue defaultQueue;
@@ -44,7 +44,7 @@ public class LayoutQueue {
      * Construct a layout queue.
      */
     public LayoutQueue() {
-        tasks = new Vector();
+        tasks = new Vector<Runnable>();
     }
 
     /**
@@ -90,7 +90,7 @@ public class LayoutQueue {
                 return null;
             }
         }
-        Runnable work = (Runnable) tasks.firstElement();
+        Runnable work = tasks.firstElement();
         tasks.removeElementAt(0);
         return work;
     }

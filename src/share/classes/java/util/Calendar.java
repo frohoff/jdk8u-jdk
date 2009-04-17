@@ -1195,7 +1195,9 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     public void set(int field, int value)
     {
-        if (isLenient() && areFieldsSet && !areAllFieldsSet) {
+        // If the fields are partially normalized, calculate all the
+        // fields before changing any fields.
+        if (areFieldsSet && !areAllFieldsSet) {
             computeFields();
         }
         internalSet(field, value);

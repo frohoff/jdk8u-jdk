@@ -1,5 +1,5 @@
 #
-# Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -32,11 +32,10 @@ PROGRAM = javaw
 PRODUCT = java
 
 #
-# Statically link javaw to avoid the dependency on msvcr71.dll.  This
+# Statically link javaw to avoid the dependency on msvcrNN.dll.  This
 # must be set before Defs.gmk is included.
 #
 MS_RUNTIME_STATIC = true
-
 #
 # Statically link javaw to avoid the dependency on jli.dll.  This
 # must be set before Program.gmk is included.

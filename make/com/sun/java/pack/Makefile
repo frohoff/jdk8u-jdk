@@ -1,5 +1,5 @@
 #
-# Copyright 2003-2005 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -97,9 +97,6 @@ ifeq ($(PLATFORM), windows)
 	/D "J2SE_FTYPE=0x1L"
 
   RES = $(OBJDIR)/$(PGRM).res
-
-  # Files built here do not compile with warning level 3 if warnings are fatal
-  COMPILER_WARNINGS_FATAL=false
 else
   LDOUTPUT = -o #Have a space 
   LDDFLAGS += -lc
@@ -145,8 +142,10 @@ endif
 $(UNPACK_EXE): $(UNPACK_EXE_FILES_o) winres 
 	$(prep-target)
 	$(LINKER)  $(LDDFLAGS) $(UNPACK_EXE_FILES_o) $(RES) $(LIBCXX) $(LDOUTPUT)$(TEMPDIR)/unpack200$(EXE_SUFFIX)
+ifdef MT
+	$(MT) /manifest $(TEMPDIR)/unpack200$(EXE_SUFFIX).manifest /outputresource:$(TEMPDIR)/unpack200$(EXE_SUFFIX);#1
+endif
 	$(CP) $(TEMPDIR)/unpack200$(EXE_SUFFIX) $(UNPACK_EXE)
-
 
 ifeq ($(PLATFORM), windows) 
 $(RES):: $(VERSIONINFO_RESOURCE)

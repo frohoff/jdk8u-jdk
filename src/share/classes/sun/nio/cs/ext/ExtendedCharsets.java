@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -770,6 +770,7 @@ public class ExtendedCharsets
                 new String[] {
                     "cp834",
                     "ibm834",
+                    "834",
                     "ibm-834"
         });
 
@@ -916,7 +917,7 @@ public class ExtendedCharsets
                     "ccsid01140",
                     "cp01140",
                     "1140",
-                    // "ebcdic-us-037+euro"
+                    "ebcdic-us-037+euro"
                 });
 
         charset("IBM01141", "IBM1141",
@@ -925,7 +926,7 @@ public class ExtendedCharsets
                     "ccsid01141",
                     "cp01141",
                     "1141",
-                    // "ebcdic-de-273+euro"
+                    "ebcdic-de-273+euro"
                 });
 
         charset("IBM01142", "IBM1142",
@@ -934,8 +935,8 @@ public class ExtendedCharsets
                     "ccsid01142",
                     "cp01142",
                     "1142",
-                    // "ebcdic-no-277+euro",
-                    // "ebcdic-dk-277+euro"
+                    "ebcdic-no-277+euro",
+                    "ebcdic-dk-277+euro"
                 });
 
         charset("IBM01143", "IBM1143",
@@ -944,8 +945,8 @@ public class ExtendedCharsets
                     "ccsid01143",
                     "cp01143",
                     "1143",
-                    // "ebcdic-fi-278+euro",
-                    // "ebcdic-se-278+euro"
+                    "ebcdic-fi-278+euro",
+                    "ebcdic-se-278+euro"
                 });
 
         charset("IBM01144", "IBM1144",
@@ -954,7 +955,7 @@ public class ExtendedCharsets
                     "ccsid01144",
                     "cp01144",
                     "1144",
-                    // "ebcdic-it-280+euro"
+                    "ebcdic-it-280+euro"
                 });
 
         charset("IBM01145", "IBM1145",
@@ -963,7 +964,7 @@ public class ExtendedCharsets
                     "ccsid01145",
                     "cp01145",
                     "1145",
-                    // "ebcdic-es-284+euro"
+                    "ebcdic-es-284+euro"
                 });
 
         charset("IBM01146", "IBM1146",
@@ -972,7 +973,7 @@ public class ExtendedCharsets
                     "ccsid01146",
                     "cp01146",
                     "1146",
-                    // "ebcdic-gb-285+euro"
+                    "ebcdic-gb-285+euro"
                 });
 
         charset("IBM01147", "IBM1147",
@@ -981,7 +982,7 @@ public class ExtendedCharsets
                     "ccsid01147",
                     "cp01147",
                     "1147",
-                    // "ebcdic-fr-277+euro"
+                    "ebcdic-fr-277+euro"
                 });
 
         charset("IBM01148", "IBM1148",
@@ -990,7 +991,7 @@ public class ExtendedCharsets
                     "ccsid01148",
                     "cp01148",
                     "1148",
-                    // "ebcdic-international-500+euro"
+                    "ebcdic-international-500+euro"
                 });
 
         charset("IBM01149", "IBM1149",
@@ -999,7 +1000,7 @@ public class ExtendedCharsets
                     "ccsid01149",
                     "cp01149",
                     "1149",
-                    // "ebcdic-s-871+euro"
+                    "ebcdic-s-871+euro"
                 });
 
         // Macintosh MacOS/Apple char encodingd

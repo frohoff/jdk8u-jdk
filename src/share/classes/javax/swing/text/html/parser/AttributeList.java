@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2004 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -129,7 +129,7 @@ class AttributeList implements DTDConstants, Serializable {
     /**
      * Create a hashtable of attribute types.
      */
-    static Hashtable attributeTypes = new Hashtable();
+    static Hashtable<Object, Object> attributeTypes = new Hashtable<Object, Object>();
 
     static void defineAttributeType(String nm, int val) {
         Integer num = Integer.valueOf(val);

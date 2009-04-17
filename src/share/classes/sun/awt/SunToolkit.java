@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -850,6 +850,15 @@ public abstract class SunToolkit extends Toolkit
      */
     public static boolean getSunAwtErasebackgroundonresize() {
         return AccessController.doPrivileged(new GetBooleanAction("sun.awt.erasebackgroundonresize"));
+    }
+
+
+    /**
+     * Makes the window OverrideRedirect, on X11 platforms. See
+     * ICCCM specification for more details about OverrideRedirect
+     * windows. Implemented in XToolkit, no-op in WToolkit.
+     */
+    public void setOverrideRedirect(Window target) {
     }
 
     static SoftCache imgCache = new SoftCache();
@@ -1963,6 +1972,21 @@ public abstract class SunToolkit extends Toolkit
         AWTAutoShutdown.getInstance().dumpPeers(aLog);
     }
 
+    private static Boolean sunAwtDisableMixing = null;
+
+    /**
+     * Returns the value of "sun.awt.disableMixing" property. Default
+     * value is {@code false}.
+     */
+    public synchronized static boolean getSunAwtDisableMixing() {
+        if (sunAwtDisableMixing == null) {
+            sunAwtDisableMixing = Boolean.valueOf(
+                    AccessController.doPrivileged(
+                        new GetBooleanAction("sun.awt.disableMixing")));
+        }
+        return sunAwtDisableMixing.booleanValue();
+    }
+
     /**
      * Returns true if the native GTK libraries are available.  The
      * default implementation returns false, but UNIXToolkit overrides this
@@ -1999,26 +2023,12 @@ class PostEventQueue {
     /*
      * Continually post pending AWTEvents to the Java EventQueue.
      */
-    public void flush() {
-        if (queueHead != null) {
-            EventQueueItem tempQueue;
-            /*
-             * We have to execute the loop inside the synchronized block
-             * to ensure that the flush is completed before a new event
-             * can be posted to this queue.
-             */
-            synchronized (this) {
-                tempQueue = queueHead;
-                queueHead = queueTail = null;
-                /*
-                 * If this PostEventQueue is flushed in parallel on two
-                 * different threads tempQueue will be null for one of them.
-                 */
-                while (tempQueue != null) {
-                    eventQueue.postEvent(tempQueue.event);
-                    tempQueue = tempQueue.next;
-                }
-            }
+    public synchronized void flush() {
+        EventQueueItem tempQueue = queueHead;
+        queueHead = queueTail = null;
+        while (tempQueue != null) {
+            eventQueue.postEvent(tempQueue.event);
+            tempQueue = tempQueue.next;
         }
     }
 
@@ -2039,12 +2049,3 @@ class PostEventQueue {
         SunToolkit.wakeupEventQueue(eventQueue, event.getSource() == AWTAutoShutdown.getInstance());
     }
 } // class PostEventQueue
-
-class EventQueueItem {
-    AWTEvent event;
-    EventQueueItem next;
-
-    EventQueueItem(AWTEvent evt) {
-        event = evt;
-    }
-} // class EventQueueItem

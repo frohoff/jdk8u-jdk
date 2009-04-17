@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2005-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -33,6 +33,7 @@ import java.util.TimeZone;
 import java.util.Date;
 
 import java.lang.NullPointerException;  // for javadoc
+import java.util.Locale;
 
 /**
  * An HttpCookie object represents an http cookie, which carries state
@@ -75,6 +76,7 @@ public final class HttpCookie implements Cloneable {
     private String path;        // Path=VALUE ... URLs that see the cookie
     private String portlist;    // Port[="portlist"] ... the port cookie may be returned to
     private boolean secure;     // Secure ... e.g. use SSL
+    private boolean httpOnly;   // HttpOnly ... i.e. not accessible to scripts
     private int version = 1;    // Version=1 ... RFC 2965 style
 
     //
@@ -656,6 +658,32 @@ public final class HttpCookie implements Cloneable {
         version = v;
     }
 
+    /**
+     * Returns {@code true} if this cookie contains the <i>HttpOnly</i>
+     * attribute. This means that the cookie should not be accessible to
+     * scripting engines, like javascript.
+     *
+     * @return {@code true} if this cookie should be considered http only.
+     * @see #setHttpOnly(boolean)
+     */
+    public boolean isHttpOnly()
+    {
+        return httpOnly;
+    }
+
+    /**
+     * Indicates whether the cookie should be considered HTTP Only. If set to
+     * {@code true} it means the cookie should not be accessible to scripting
+     * engines like javascript.
+     *
+     * @param httpOnly if {@code true} make the cookie HTTP only, i.e.
+     *                 only visible as part of an HTTP request.
+     * @see #isHttpOnly()
+     */
+    public void setHttpOnly(boolean httpOnly)
+    {
+        this.httpOnly = httpOnly;
+    }
 
     /**
      * The utility method to check whether a host name is in a domain
@@ -877,6 +905,7 @@ public final class HttpCookie implements Cloneable {
             || name.equalsIgnoreCase("Port")            // rfc2965 only
             || name.equalsIgnoreCase("Secure")
             || name.equalsIgnoreCase("Version")
+            || name.equalsIgnoreCase("HttpOnly")
             || name.charAt(0) == '$')
         {
             return true;
@@ -996,6 +1025,11 @@ public final class HttpCookie implements Cloneable {
                     cookie.setSecure(true);
                 }
             });
+        assignors.put("httponly", new CookieAttributeAssignor(){
+                public void assign(HttpCookie cookie, String attrName, String attrValue) {
+                    cookie.setHttpOnly(true);
+                }
+            });
         assignors.put("version", new CookieAttributeAssignor(){
                 public void assign(HttpCookie cookie, String attrName, String attrValue) {
                     try {
@@ -1025,8 +1059,7 @@ public final class HttpCookie implements Cloneable {
         if (assignor != null) {
             assignor.assign(cookie, attrName, attrValue);
         } else {
-            // must be an error
-            throw new IllegalArgumentException("Illegal cookie attribute");
+            // Ignore the attribute as per RFC 2965
         }
     }
 
@@ -1064,7 +1097,7 @@ public final class HttpCookie implements Cloneable {
     static {
             cDateFormats = new SimpleDateFormat[COOKIE_DATE_FORMATS.length];
             for (int i = 0; i < COOKIE_DATE_FORMATS.length; i++) {
-                cDateFormats[i] = new SimpleDateFormat(COOKIE_DATE_FORMATS[i]);
+                cDateFormats[i] = new SimpleDateFormat(COOKIE_DATE_FORMATS[i], Locale.US);
                 cDateFormats[i].setTimeZone(TimeZone.getTimeZone("GMT"));
             }
     }

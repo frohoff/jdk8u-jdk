@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -515,7 +515,7 @@ public abstract class Monitor
         //
         ObservedObject o = createObservedObject(object);
         o.setAlreadyNotified(RESET_FLAGS_ALREADY_NOTIFIED);
-        o.setDerivedGauge(null);
+        o.setDerivedGauge(INTEGER_ZERO);
         o.setDerivedGaugeTimeStamp(System.currentTimeMillis());
         observedObjects.add(o);
 

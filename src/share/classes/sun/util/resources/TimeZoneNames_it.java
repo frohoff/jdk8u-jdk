@@ -1,5 +1,5 @@
 /*
- * Portions Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Portions Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -141,6 +141,8 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
                                      "Ora estiva della Malaysia", "MYST"};
         String NORONHA[] = new String[] {"Ora di Fernando de Noronha", "FNT",
                                          "Ora estiva di Fernando de Noronha", "FNST"};
+        String NPT[] = new String[] {"Ora del Nepal", "NPT",
+                                     "Ora estiva del Nepal", "NPST"};
         String NST[] = new String[] {"Ora solare di Terranova", "NST",
                                      "Ora legale di Terranova", "NDT"};
         String NZST[] = new String[] {"Ora solare della Nuova Zelanda", "NZST",
@@ -151,6 +153,8 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
                                      "Ora estiva del Pakistan", "PKST"};
         String PST[] = new String[] {"Ora solare della costa occidentale USA", "PST",
                                      "Ora legale della costa occidentale USA", "PDT"};
+        String RST[] = new String[] {"Ora solare USA orientale", "EST",
+                                     "Ora legale USA centrale", "CDT"};
         String SAST[] = new String[] {"Ora solare del Sudafrica", "SAST",
                                       "Ora estiva del Sudafrica", "SAST"};
         String SBT[] = new String[] {"Ora delle Isole Salomone", "SBT",
@@ -290,7 +294,9 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
             {"America/Argentina/La_Rioja", AGT},
             {"America/Argentina/Mendoza", AGT},
             {"America/Argentina/Rio_Gallegos", AGT},
+            {"America/Argentina/Salta", AGT},
             {"America/Argentina/San_Juan", AGT},
+            {"America/Argentina/San_Luis", AGT},
             {"America/Argentina/Tucuman", AGT},
             {"America/Argentina/Ushuaia", AGT},
             {"America/Aruba", AST},
@@ -329,7 +335,7 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
             {"America/Detroit", EST},
             {"America/Dominica", AST},
             {"America/Edmonton", MST},
-            {"America/Eirunepe", ACT},
+            {"America/Eirunepe", AMT},
             {"America/El_Salvador", CST},
             {"America/Ensenada", PST},
             {"America/Fort_Wayne", EST},
@@ -372,6 +378,7 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
             {"America/Maceio", BRT},
             {"America/Managua", CST},
             {"America/Manaus", AMT},
+            {"America/Marigot", AST},
             {"America/Martinique", AST},
             {"America/Mazatlan", MST},
             {"America/Mendoza", AGT},
@@ -398,21 +405,23 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
                                                  "Ora estiva di Suriname", "SRST"}},
             {"America/Port-au-Prince", EST},
             {"America/Port_of_Spain", AST},
-            {"America/Porto_Acre", ACT},
+            {"America/Porto_Acre", AMT},
             {"America/Porto_Velho", AMT},
             {"America/Puerto_Rico", AST},
             {"America/Rainy_River", CST},
             {"America/Rankin_Inlet", CST},
             {"America/Recife", BRT},
             {"America/Regina", CST},
-            {"America/Resolute", EST},
-            {"America/Rio_Branco", ACT},
+            {"America/Resolute", RST},
+            {"America/Rio_Branco", AMT},
             {"America/Rosario", AGT},
+            {"America/Santarem", BRT},
             {"America/Santiago", CLT},
             {"America/Santo_Domingo", AST},
             {"America/Sao_Paulo", BRT},
             {"America/Scoresbysund", EGT},
             {"America/Shiprock", MST},
+            {"America/St_Barthelemy", AST},
             {"America/St_Kitts", AST},
             {"America/St_Lucia", AST},
             {"America/St_Thomas", AST},
@@ -485,6 +494,7 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
                                             "Ora estiva del Tagikistan", "TJST"}},
             {"Asia/Gaza", EET},
             {"Asia/Harbin", CTT},
+            {"Asia/Ho_Chi_Minh", ICT},
             {"Asia/Hong_Kong", HKT},
             {"Asia/Hovd", new String[] {"Ora di Hovd", "HOVT",
                                         "Ora estiva di Hovd", "HOVST"}},
@@ -500,8 +510,9 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
                                              "Ora estiva di Petropavlovsk-Kamchatski", "PETST"}},
             {"Asia/Karachi", PKT},
             {"Asia/Kashgar", CTT},
-            {"Asia/Katmandu", new String[] {"Ora del Nepal", "NPT",
-                                            "Ora estiva del Nepal", "NPST"}},
+            {"Asia/Kathmandu", NPT},
+            {"Asia/Katmandu", NPT},
+            {"Asia/Kolkata", IST},
             {"Asia/Krasnoyarsk", new String[] {"Ora di Krasnojarsk", "KRAT",
                                                "Ora estiva di Krasnojarsk", "KRAST"}},
             {"Asia/Kuala_Lumpur", MYT},
@@ -599,7 +610,7 @@ public final class TimeZoneNames_it extends TimeZoneNamesBundle {
             {"Australia/Yancowinna", BROKEN_HILL},
             {"BET", BRT},
             {"BST", BDT},
-            {"Brazil/Acre", ACT},
+            {"Brazil/Acre", AMT},
             {"Brazil/DeNoronha", NORONHA},
             {"Brazil/East", BRT},
             {"Brazil/West", AMT},

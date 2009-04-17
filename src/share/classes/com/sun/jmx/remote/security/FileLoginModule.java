@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2004-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,6 +25,8 @@
 
 package com.sun.jmx.remote.security;
 
+import com.sun.jmx.mbeanserver.GetPropertyAction;
+import com.sun.jmx.mbeanserver.Util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,8 +48,6 @@ import javax.management.remote.JMXPrincipal;
 import com.sun.jmx.remote.util.ClassLogger;
 import com.sun.jmx.remote.util.EnvHelp;
 import sun.management.jmxremote.ConnectorBootstrap;
-
-import sun.security.action.GetPropertyAction;
 
 /**
  * This {@link LoginModule} performs file-based authentication.
@@ -147,8 +147,8 @@ public class FileLoginModule implements LoginModule {
     // Initial state
     private Subject subject;
     private CallbackHandler callbackHandler;
-    private Map<String, ?> sharedState;
-    private Map options;
+    private Map<String, Object> sharedState;
+    private Map<String, ?> options;
     private String passwordFile;
     private String passwordFileDisplayName;
     private boolean userSuppliedPasswordFile;
@@ -173,7 +173,7 @@ public class FileLoginModule implements LoginModule {
 
         this.subject = subject;
         this.callbackHandler = callbackHandler;
-        this.sharedState = sharedState;
+        this.sharedState = Util.cast(sharedState);
         this.options = options;
 
         // initialize any configured options
@@ -455,8 +455,8 @@ public class FileLoginModule implements LoginModule {
         if (storePass &&
             !sharedState.containsKey(USERNAME_KEY) &&
             !sharedState.containsKey(PASSWORD_KEY)) {
-            ((Map) sharedState).put(USERNAME_KEY, username);
-            ((Map) sharedState).put(PASSWORD_KEY, password);
+            sharedState.put(USERNAME_KEY, username);
+            sharedState.put(PASSWORD_KEY, password);
         }
 
         // Create a new user principal
@@ -479,7 +479,7 @@ public class FileLoginModule implements LoginModule {
             if (userSuppliedPasswordFile || hasJavaHomePermission) {
                 throw e;
             } else {
-                FilePermission fp =
+                final FilePermission fp =
                         new FilePermission(passwordFileDisplayName, "read");
                 AccessControlException ace = new AccessControlException(
                         "access denied " + fp.toString());
@@ -488,10 +488,13 @@ public class FileLoginModule implements LoginModule {
             }
         }
         try {
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            userCredentials = new Properties();
-            userCredentials.load(bis);
-            bis.close();
+            final BufferedInputStream bis = new BufferedInputStream(fis);
+            try {
+                userCredentials = new Properties();
+                userCredentials.load(bis);
+            } finally {
+                bis.close();
+            }
         } finally {
             fis.close();
         }

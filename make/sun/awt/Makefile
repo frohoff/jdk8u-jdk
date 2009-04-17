@@ -1,5 +1,5 @@
 #
-# Copyright 1995-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -28,17 +28,13 @@ PACKAGE = sun.awt
 LIBRARY = awt
 PRODUCT = sun
 
-#
 # Tell Defs.gmk that VIS is needed
-#
 VIS_NEEDED=true
 
-include $(BUILDDIR)/common/Defs.gmk
-
-#
 # Use highest optimization level
-#
-_OPT = $(CC_HIGHEST_OPT)
+OPTMIZATION_LEVEL = HIGHEST
+
+include $(BUILDDIR)/common/Defs.gmk
 
 OTHER_CFLAGS += -D__MEDIALIB_OLD_NAMES -D__USE_J2D_NAMES
 
@@ -51,7 +47,7 @@ OTHER_CFLAGS += -D__MEDIALIB_OLD_NAMES -D__USE_J2D_NAMES
 # sun/awt/resources       handled by java/awt/Makefile
 # sun/java2d/pisces       handled by sun/pisces/Makefile
 #
-AUTO_FILES_JAVA_DIRS = sun/awt sun/java2d
+AUTO_FILES_JAVA_DIRS = sun/awt sun/java2d com/sun/awt
 AUTO_JAVA_PRUNE = resources pisces
 
 ifeq ($(PLATFORM), windows)
@@ -69,7 +65,6 @@ include FILES_export_windows.gmk
 #
 AUTO_JAVA_PRUNE += RemoteOffScreenImage.java
 
-OTHER_CXXFLAGS += -DD3D_OVERLOADS
 OTHER_CFLAGS += $(GX_OPTION) -DMLIB_NO_LIBSUNMATH -DUNICODE -D_UNICODE
 OTHER_CXXFLAGS += $(GX_OPTION) -DUNICODE -D_UNICODE
 
@@ -252,8 +247,14 @@ endif # PLATFORM
 ifeq ($(PLATFORM), windows)
 # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv WINDOWS
 OTHER_LDLIBS = kernel32.lib user32.lib gdi32.lib winspool.lib \
-               imm32.lib ole32.lib uuid.lib $(JVMLIB) \
-               shell32.lib
+               imm32.lib ole32.lib uuid.lib shell32.lib \
+               comdlg32.lib winmm.lib comctl32.lib delayimp.lib \
+               $(JVMLIB) \
+               /DELAYLOAD:user32.dll /DELAYLOAD:gdi32.dll \
+               /DELAYLOAD:shell32.dll /DELAYLOAD:winmm.dll \
+               /DELAYLOAD:winspool.drv /DELAYLOAD:imm32.dll \
+               /DELAYLOAD:ole32.dll /DELAYLOAD:comdlg32.dll \
+               /DELAYLOAD:comctl32.dll
 
 clean:: awt.clean
 
@@ -448,7 +449,7 @@ OTHER_INCLUDES += -I$(CLASSHDRDIR)/../../java/jvm \
 	-I$(SHARE_SRC)/native/sun/dc/path \
 	-I$(SHARE_SRC)/native/sun/dc/doe \
 	-I$(SHARE_SRC)/native/sun/awt/debug \
-	-I$(PLATFORM_SRC)/native/sun/awt \
+	-I$(PLATFORM_SRC)/native/sun/awt
 #	-I$(WINAWT_COMMON_native)
 
 # this is only required for compiling )/native/sun/awt/medialib/*.c files

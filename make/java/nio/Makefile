@@ -1,5 +1,5 @@
 #
-# Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2000-2009 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -56,56 +56,214 @@ FILES_java += \
         sun/nio/ch/DevPollSelectorProvider.java \
 	sun/nio/ch/InheritedChannel.java \
         sun/nio/ch/PollSelectorProvider.java \
-        sun/nio/ch/PollSelectorImpl.java 
+        sun/nio/ch/PollSelectorImpl.java \
+	sun/nio/ch/Port.java \
+	sun/nio/ch/SimpleAsynchronousFileChannelImpl.java \
+	sun/nio/ch/SolarisAsynchronousChannelProvider.java \
+	sun/nio/ch/SolarisEventPort.java \
+	sun/nio/ch/UnixAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/UnixAsynchronousSocketChannelImpl.java \
+	\
+	sun/nio/fs/GnomeFileTypeDetector.java \
+	sun/nio/fs/PollingWatchService.java \
+	sun/nio/fs/SolarisAclFileAttributeView.java \
+	sun/nio/fs/SolarisFileStore.java \
+	sun/nio/fs/SolarisFileSystem.java \
+	sun/nio/fs/SolarisFileSystemProvider.java \
+	sun/nio/fs/SolarisUserDefinedFileAttributeView.java \
+	sun/nio/fs/SolarisNativeDispatcher.java \
+	sun/nio/fs/SolarisWatchService.java \
+	sun/nio/fs/UnixChannelFactory.java \
+	sun/nio/fs/UnixCopyFile.java \
+	sun/nio/fs/UnixDirectoryStream.java \
+	sun/nio/fs/UnixException.java \
+	sun/nio/fs/UnixFileAttributeViews.java \
+	sun/nio/fs/UnixFileAttributes.java \
+	sun/nio/fs/UnixFileKey.java \
+	sun/nio/fs/UnixFileModeAttribute.java \
+	sun/nio/fs/UnixFileStore.java \
+	sun/nio/fs/UnixFileStoreAttributes.java \
+	sun/nio/fs/UnixFileSystem.java \
+	sun/nio/fs/UnixFileSystemProvider.java \
+	sun/nio/fs/UnixMountEntry.java \
+	sun/nio/fs/UnixNativeDispatcher.java \
+	sun/nio/fs/UnixPath.java \
+	sun/nio/fs/UnixSecureDirectoryStream.java \
+	sun/nio/fs/UnixUriUtils.java \
+	sun/nio/fs/UnixUserPrincipals.java
 
 FILES_c += \
         DevPollArrayWrapper.c \
 	InheritedChannel.c \
+	NativeThread.c \
         PollArrayWrapper.c \
-	NativeThread.c
+	SolarisEventPort.c \
+	UnixAsynchronousServerSocketChannelImpl.c \
+	UnixAsynchronousSocketChannelImpl.c \
+	\
+	GnomeFileTypeDetector.c \
+	SolarisNativeDispatcher.c \
+	SolarisWatchService.c \
+	UnixCopyFile.c \
+	UnixNativeDispatcher.c
 
 FILES_export += \
 	sun/nio/ch/DevPollArrayWrapper.java \
 	sun/nio/ch/InheritedChannel.java \
-	sun/nio/ch/NativeThread.java 
+	sun/nio/ch/NativeThread.java \
+	sun/nio/ch/SolarisEventPort.java \
+	sun/nio/ch/UnixAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/UnixAsynchronousSocketChannelImpl.java \
+	\
+	sun/nio/fs/GnomeFileTypeDetector.java \
+	sun/nio/fs/SolarisNativeDispatcher.java \
+	sun/nio/fs/SolarisWatchService.java \
+	sun/nio/fs/UnixCopyFile.java \
+	sun/nio/fs/UnixNativeDispatcher.java
+
+FILES_gen += \
+	sun/nio/fs/SolarisConstants.java \
+	sun/nio/fs/UnixConstants.java
 endif # PLATFORM = solaris
 
 ifeq ($(PLATFORM), windows)
 FILES_java += \
+	sun/nio/ch/Iocp.java \
+	sun/nio/ch/PendingIoCache.java \
+	sun/nio/ch/WindowsAsynchronousChannelProvider.java \
+	sun/nio/ch/WindowsAsynchronousFileChannelImpl.java \
+	sun/nio/ch/WindowsAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/WindowsAsynchronousSocketChannelImpl.java \
         sun/nio/ch/WindowsSelectorImpl.java \
-        sun/nio/ch/WindowsSelectorProvider.java
+        sun/nio/ch/WindowsSelectorProvider.java \
+	\
+	sun/nio/fs/RegistryFileTypeDetector.java \
+	sun/nio/fs/WindowsAclFileAttributeView.java \
+	sun/nio/fs/WindowsChannelFactory.java \
+	sun/nio/fs/WindowsConstants.java \
+	sun/nio/fs/WindowsDirectoryStream.java \
+	sun/nio/fs/WindowsException.java \
+	sun/nio/fs/WindowsFileAttributeViews.java \
+	sun/nio/fs/WindowsFileAttributes.java \
+	sun/nio/fs/WindowsFileCopy.java \
+	sun/nio/fs/WindowsFileStore.java \
+	sun/nio/fs/WindowsFileSystem.java \
+	sun/nio/fs/WindowsFileSystemProvider.java \
+	sun/nio/fs/WindowsLinkSupport.java \
+	sun/nio/fs/WindowsUserDefinedFileAttributeView.java \
+	sun/nio/fs/WindowsNativeDispatcher.java \
+	sun/nio/fs/WindowsPath.java \
+	sun/nio/fs/WindowsPathParser.java \
+	sun/nio/fs/WindowsPathType.java \
+	sun/nio/fs/WindowsSecurity.java \
+	sun/nio/fs/WindowsSecurityDescriptor.java \
+	sun/nio/fs/WindowsUriSupport.java \
+	sun/nio/fs/WindowsUserPrincipals.java \
+	sun/nio/fs/WindowsWatchService.java
 
 FILES_c += \
+	Iocp.c \
+	RegistryFileTypeDetector.c \
+	WindowsAsynchronousFileChannelImpl.c \
+	WindowsAsynchronousServerSocketChannelImpl.c \
+	WindowsAsynchronousSocketChannelImpl.c \
+	WindowsNativeDispatcher.c \
         WindowsSelectorImpl.c
 
 FILES_export += \
-	sun/nio/ch/WindowsSelectorImpl.java
+	sun/nio/ch/Iocp.java \
+	sun/nio/ch/WindowsAsynchronousFileChannelImpl.java \
+	sun/nio/ch/WindowsAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/WindowsAsynchronousSocketChannelImpl.java \
+	sun/nio/ch/WindowsSelectorImpl.java \
+	sun/nio/fs/WindowsNativeDispatcher.java \
+	sun/nio/fs/RegistryFileTypeDetector.java
 endif # PLATFORM = windows
 
 ifeq ($(PLATFORM), linux)
 FILES_java += \
         sun/nio/ch/AbstractPollSelectorImpl.java \
+	sun/nio/ch/EPoll.java \
 	sun/nio/ch/EPollArrayWrapper.java \
+	sun/nio/ch/EPollPort.java \
 	sun/nio/ch/EPollSelectorProvider.java \
 	sun/nio/ch/EPollSelectorImpl.java \
 	sun/nio/ch/InheritedChannel.java \
+	sun/nio/ch/LinuxAsynchronousChannelProvider.java \
         sun/nio/ch/PollSelectorProvider.java \
-        sun/nio/ch/PollSelectorImpl.java
+        sun/nio/ch/PollSelectorImpl.java \
+	sun/nio/ch/Port.java \
+	sun/nio/ch/SimpleAsynchronousFileChannelImpl.java \
+	sun/nio/ch/UnixAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/UnixAsynchronousSocketChannelImpl.java \
+	\
+	sun/nio/fs/GnomeFileTypeDetector.java \
+	sun/nio/fs/LinuxDosFileAttributeView.java \
+	sun/nio/fs/LinuxFileStore.java \
+	sun/nio/fs/LinuxFileSystem.java \
+	sun/nio/fs/LinuxFileSystemProvider.java \
+	sun/nio/fs/LinuxUserDefinedFileAttributeView.java \
+	sun/nio/fs/LinuxNativeDispatcher.java \
+	sun/nio/fs/LinuxWatchService.java \
+	sun/nio/fs/PollingWatchService.java \
+	sun/nio/fs/UnixChannelFactory.java \
+	sun/nio/fs/UnixCopyFile.java \
+	sun/nio/fs/UnixDirectoryStream.java \
+	sun/nio/fs/UnixException.java \
+	sun/nio/fs/UnixFileAttributeViews.java \
+	sun/nio/fs/UnixFileAttributes.java \
+	sun/nio/fs/UnixFileKey.java \
+	sun/nio/fs/UnixFileModeAttribute.java \
+	sun/nio/fs/UnixFileStore.java \
+	sun/nio/fs/UnixFileStoreAttributes.java \
+	sun/nio/fs/UnixFileSystem.java \
+	sun/nio/fs/UnixFileSystemProvider.java \
+	sun/nio/fs/UnixMountEntry.java \
+	sun/nio/fs/UnixNativeDispatcher.java \
+	sun/nio/fs/UnixPath.java \
+	sun/nio/fs/UnixSecureDirectoryStream.java \
+	sun/nio/fs/UnixUriUtils.java \
+	sun/nio/fs/UnixUserPrincipals.java
 
 FILES_c += \
+	EPoll.c \
 	EPollArrayWrapper.c \
-        PollArrayWrapper.c \
+	EPollPort.c \
 	InheritedChannel.c \
-	NativeThread.c
+	NativeThread.c \
+        PollArrayWrapper.c \
+	UnixAsynchronousServerSocketChannelImpl.c \
+	UnixAsynchronousSocketChannelImpl.c \
+	\
+	GnomeFileTypeDetector.c \
+	LinuxNativeDispatcher.c \
+	LinuxWatchService.c \
+	UnixCopyFile.c \
+	UnixNativeDispatcher.c
 
 FILES_export += \
+	sun/nio/ch/EPoll.java \
         sun/nio/ch/EPollArrayWrapper.java \
+	sun/nio/ch/EPollPort.java \
 	sun/nio/ch/InheritedChannel.java \
-	sun/nio/ch/NativeThread.java 
+	sun/nio/ch/NativeThread.java \
+	sun/nio/ch/UnixAsynchronousServerSocketChannelImpl.java \
+	sun/nio/ch/UnixAsynchronousSocketChannelImpl.java \
+	\
+	sun/nio/fs/GnomeFileTypeDetector.java \
+	sun/nio/fs/LinuxNativeDispatcher.java \
+	sun/nio/fs/LinuxWatchService.java \
+	sun/nio/fs/UnixCopyFile.java \
+	sun/nio/fs/UnixNativeDispatcher.java
+	
+FILES_gen += \
+	sun/nio/fs/UnixConstants.java
 endif # PLATFORM = linux
 
+#
 # Find platform-specific C source files
 #
+vpath %.c $(PLATFORM_SRC)/native/sun/nio/fs
 vpath %.c $(PLATFORM_SRC)/native/sun/nio/ch
 vpath %.c $(SHARE_SRC)/native/sun/nio/ch
 
@@ -134,7 +292,6 @@ ifeq ($(PLATFORM),windows)
      $(OBJDIR)/../../../java.lang/java/$(OBJDIRNAME)/FileDescriptor_md.obj
 endif
 ifeq ($(PLATFORM), linux)
-COMPILER_WARNINGS_FATAL=true
 OTHER_LDLIBS += -L$(LIBDIR)/$(LIBARCH) -ljava -lnet -lpthread -ldl
 endif
 ifeq ($(PLATFORM), solaris)
@@ -166,8 +323,8 @@ include $(BUILDDIR)/common/Library.gmk
 # Generate source files
 #
 
-SPP = spp.sh
-SPP_CMD = $(SH) $(SPP)
+SPP_JARFILE = $(BUILDTOOLJARDIR)/spp.jar
+SPP_CMD = $(BOOT_JAVA_CMD) -jar $(SPP_JARFILE)
 
 FILES_genout = $(FILES_gen:%.java=$(GENSRCDIR)/%.java)
 
@@ -176,14 +333,18 @@ CH_SRC=$(NIO_SRC)/channels
 CS_SRC=$(NIO_SRC)/charset
 SCH_SRC=$(SNIO_SRC)/ch
 SCS_SRC=$(SNIO_SRC)/cs
+SFS_SRC=$(SNIO_SRC)/fs
 
 BUF_GEN=$(NIO_GEN)
 CH_GEN=$(NIO_GEN)/channels
 CS_GEN=$(NIO_GEN)/charset
 SCH_GEN=$(SNIO_GEN)/ch
 SCS_GEN=$(SNIO_GEN)/cs
+SFS_GEN=$(SNIO_GEN)/fs
 
-sources: $(SPP) $(FILES_genout)
+FILES_gensbcs_out = $(FILES_gen_sbcs:%.java=$(GENSRCDIR)/%.java)
+
+sources: $(SPP_JARFILE) $(FILES_genout) $(FILES_gensbcs_out)
 
 #
 # Generated buffer classes
@@ -619,12 +780,6 @@ $(BUF_GEN)/%Exception.java: genExceptions.sh $(BUF_SRC)/exceptions
 	@$(RM) $@.temp
 	$(GEN_EX_CMD) $(BUF_SRC)/exceptions $(BUF_GEN)
 
-$(SCH_GEN)/%Exception.java: genExceptions.sh $(SCH_SRC)/exceptions
-	$(prep-target)
-	@$(RM) $@.temp
-	$(GEN_EX_CMD) $(SCH_SRC)/exceptions $(SCH_GEN)
-
-
 #
 # Generated charset-provider classes
 #
@@ -638,5 +793,77 @@ $(SCS_GEN)/StandardCharsets.java: genCharsetProvider.sh \
 	NAWK="$(NAWK)" TEMPDIR="$(TEMPDIR)" SH="$(SH)" \
 	  HASHER="$(BOOT_JAVA_CMD) -jar $(HASHER_JARFILE)" \
 	  $(SH) -e genCharsetProvider.sh $(SCS_SRC)/standard-charsets $(SCS_GEN)
+
+#
+# Generated channel implementation classes.
+# C source is compiled in TEMPDIR to avoid turds left by Windows compilers.
+#
+
+GENSOR_SRC = $(SHARE_SRC)/native/sun/nio/ch/genSocketOptionRegistry.c
+
+GENSOR_EXE = $(TEMPDIR)/genSocketOptionRegistry$(EXE_SUFFIX)
+
+SOR_COPYRIGHT_YEARS = $(shell $(CAT) $(GENSOR_SRC) | \
+	$(NAWK) '/^.*Copyright.*Sun/ { print $$3 }') 
+
+$(TEMPDIR)/$(GENSOR_SRC) : $(GENSOR_SRC)
+	$(install-file)
+
+$(GENSOR_EXE) : $(TEMPDIR)/$(GENSOR_SRC)
+	$(prep-target)
+	($(CD) $(TEMPDIR); $(CC) $(CPPFLAGS) $(LDDFLAGS) \
+	   -o genSocketOptionRegistry$(EXE_SUFFIX) $(GENSOR_SRC))
+
+$(SCH_GEN)/SocketOptionRegistry.java: $(GENSOR_EXE)
+	$(prep-target)
+	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e addNotices.sh $(SOR_COPYRIGHT_YEARS) > $@
+	$(GENSOR_EXE) >> $@
+
+#
+# Generated sun.nio.cs SingleByte classes
+#
+GENCSSRC = $(BUILDDIR)/tools/CharsetMapping
+CHARSETMAPPING_JARFILE = $(BUILDTOOLJARDIR)/charsetmapping.jar
+
+$(FILES_gensbcs_out): $(GENCSSRC)/SingleByte-X.java $(GENCSSRC)/sbcs
+	@$(prep-target)
+	$(BOOT_JAVA_CMD) -cp $(CHARSETMAPPING_JARFILE) build.tools.charsetmapping.GenerateSBCS \
+		$(GENCSSRC) $(SCS_GEN) sbcs
+
+# 
+# Generated file system implementation classes (Unix only)
+#
+
+GENUC_SRC = $(PLATFORM_SRC)/native/sun/nio/fs/genUnixConstants.c
+
+GENUC_EXE = $(TEMPDIR)/genUnixConstants
+
+GENUC_COPYRIGHT_YEARS = $(shell $(CAT) $(GENUC_SRC) | \
+	$(NAWK) '/^.*Copyright.*Sun/ { print $$3 }')
+
+$(GENUC_EXE) : $(GENUC_SRC)
+	$(prep-target)
+	$(CC) $(CPPFLAGS) -o $@ $(GENUC_SRC)
+
+$(SFS_GEN)/UnixConstants.java: $(GENUC_EXE)
+	$(prep-target)
+	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e addNotices.sh $(GENUC_COPYRIGHT_YEARS) > $@
+	$(GENUC_EXE) >> $@
+
+GENSC_SRC = $(PLATFORM_SRC)/native/sun/nio/fs/genSolarisConstants.c
+
+GENSC_EXE = $(TEMPDIR)/genSolarisConstants
+
+GENSC_COPYRIGHT_YEARS = $(shell $(CAT) $(GENSC_SRC) | \
+	$(NAWK) '/^.*Copyright.*Sun/ { print $$3 }')
+
+$(GENSC_EXE) : $(GENSC_SRC)
+	$(prep-target)
+	$(CC) $(CPPFLAGS) -o $@ $(GENSC_SRC)
+
+$(SFS_GEN)/SolarisConstants.java: $(GENSC_EXE)
+	$(prep-target)
+	NAWK="$(NAWK)" SH="$(SH)" $(SH) -e addNotices.sh $(GENSC_COPYRIGHT_YEARS) > $@
+	$(GENSC_EXE) >> $@
 
 .PHONY: sources 

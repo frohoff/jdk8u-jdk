@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -281,7 +281,7 @@ public class TextField extends TextComponent {
             echoChar = c;
             TextFieldPeer peer = (TextFieldPeer)this.peer;
             if (peer != null) {
-                peer.setEchoCharacter(c);
+                peer.setEchoChar(c);
             }
         }
     }
@@ -296,9 +296,7 @@ public class TextField extends TextComponent {
         super.setText(t);
 
         // This could change the preferred size of the Component.
-        if (valid) {
-            invalidate();
-        }
+        invalidateIfValid();
     }
 
     /**
@@ -378,7 +376,7 @@ public class TextField extends TextComponent {
         synchronized (getTreeLock()) {
             TextFieldPeer peer = (TextFieldPeer)this.peer;
             return (peer != null) ?
-                       peer.preferredSize(columns) :
+                       peer.getPreferredSize(columns) :
                        super.preferredSize();
         }
     }
@@ -426,7 +424,7 @@ public class TextField extends TextComponent {
         synchronized (getTreeLock()) {
             TextFieldPeer peer = (TextFieldPeer)this.peer;
             return (peer != null) ?
-                       peer.minimumSize(columns) :
+                       peer.getMinimumSize(columns) :
                        super.minimumSize();
         }
     }

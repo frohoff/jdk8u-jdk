@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -33,6 +33,7 @@ import java.io.FileDescriptor;
 import java.io.ByteArrayOutputStream;
 
 import sun.net.ConnectionResetException;
+import sun.net.NetHooks;
 
 /**
  * Default Socket Implementation. This implementation does
@@ -304,10 +305,21 @@ abstract class AbstractPlainSocketImpl extends SocketImpl
      */
 
     synchronized void doConnect(InetAddress address, int port, int timeout) throws IOException {
+        synchronized (fdLock) {
+            if (!closePending && (socket == null || !socket.isBound())) {
+                NetHooks.beforeTcpConnect(fd, address, port);
+            }
+        }
         try {
             FileDescriptor fd = acquireFD();
             try {
                 socketConnect(address, port, timeout);
+                /* socket may have been closed during poll/select */
+                synchronized (fdLock) {
+                    if (closePending) {
+                        throw new SocketException ("Socket closed");
+                    }
+                }
                 // If we have a ref. to the Socket, then sets the flags
                 // created, bound & connected to true.
                 // This is normally done in Socket.connect() but some
@@ -333,6 +345,11 @@ abstract class AbstractPlainSocketImpl extends SocketImpl
     protected synchronized void bind(InetAddress address, int lport)
         throws IOException
     {
+       synchronized (fdLock) {
+            if (!closePending && (socket == null || !socket.isBound())) {
+                NetHooks.beforeTcpBind(fd, address, lport);
+            }
+        }
         socketBind(address, lport);
         if (socket != null)
             socket.setBound();

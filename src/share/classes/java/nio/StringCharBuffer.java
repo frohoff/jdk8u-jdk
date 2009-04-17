@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -99,7 +99,7 @@ class StringCharBuffer                                  // package-private
         return str.toString().substring(start + offset, end + offset);
     }
 
-    public final CharSequence subSequence(int start, int end) {
+    public final CharBuffer subSequence(int start, int end) {
         try {
             int pos = position();
             return new StringCharBuffer(str, -1,

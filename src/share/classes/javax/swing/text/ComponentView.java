@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -27,6 +27,7 @@ package javax.swing.text;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.*;
 
@@ -434,7 +435,7 @@ public class ComponentView extends View  {
         /**
          * Shows or hides this component depending on the value of parameter
          * <code>b</code>.
-         * @param <code>b</code>  If <code>true</code>, shows this component;
+         * @param b If <code>true</code>, shows this component;
          * otherwise, hides this component.
          * @see #isVisible
          * @since JDK1.1
@@ -480,7 +481,7 @@ public class ComponentView extends View  {
             return yalign;
         }
 
-        public java.util.Set getFocusTraversalKeys(int id) {
+        public Set<AWTKeyStroke> getFocusTraversalKeys(int id) {
             return KeyboardFocusManager.getCurrentKeyboardFocusManager().
                     getDefaultFocusTraversalKeys(id);
         }

@@ -1,5 +1,5 @@
 #
-# Copyright 1995-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1995-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -94,8 +94,6 @@ include $(BUILDDIR)/common/Library.gmk
 
 ifeq ($(PLATFORM), windows)
   OTHER_LDLIBS = ws2_32.lib $(JVMLIB)
-  # Will not compile at warning level 3 if warnings are fatal
-  COMPILER_WARNINGS_FATAL=false
 else
   OTHER_LDLIBS = $(LIBSOCKET) -lnsl -ldl $(JVMLIB)
 endif
@@ -110,11 +108,24 @@ CLASSES.export += java.lang.Integer java.io.FileDescriptor java.net.InetAddressI
 #
 LOCALE_SET_DEFINITION = jre
 
-properties: $(LIBDIR) $(LIBDIR)/net.properties
+MISC_FILES = $(LIBDIR) $(LIBDIR)/net.properties
 
 $(LIBDIR)/net.properties: $(SHARE_SRC)/lib/net.properties
 	@$(RM) $@
 	$(CP) $< $@
 
-build: properties
+# 
+# SDP configuration template
+#
+ifeq ($(PLATFORM), solaris)
+SDP_PATH = sdp/sdp.conf.template
+SDP_CONF = $(LIBDIR)/$(SDP_PATH)
+$(SDP_CONF): $(PLATFORM_SRC)/lib/$(SDP_PATH)
+	@$(RM) $*
+	$(install-file)
+
+MISC_FILES += $(SDP_CONF)
+endif
+
+build: $(MISC_FILES)
 

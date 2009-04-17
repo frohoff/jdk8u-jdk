@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -387,9 +387,9 @@ public class DefaultMetalTheme extends MetalTheme {
          * that it is wrapped inside a <code>doPrivileged</code> call.
          */
         protected Font getPrivilegedFont(final int key) {
-            return (Font)java.security.AccessController.doPrivileged(
-                new java.security.PrivilegedAction() {
-                    public Object run() {
+            return java.security.AccessController.doPrivileged(
+                new java.security.PrivilegedAction<Font>() {
+                    public Font run() {
                         return Font.getFont(getDefaultPropertyName(key));
                     }
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2007-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -108,6 +108,9 @@ import java.lang.reflect.Type;
  * <p>If we are unable to modify the {@code MyLinkedList} class,
  * we can define an {@link MXBeanMappingFactory}.  See the documentation
  * of that class for further details.</p>
+ *
+ * @see <a href="../MXBean.html#custom">MXBean specification, section
+ * "Custom MXBean type mappings"</a>
  */
 public abstract class MXBeanMapping {
     private final Type javaType;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2004 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -272,14 +272,14 @@ class AnnotationInvocationHandler implements InvocationHandler, Serializable {
      */
     private Method[] getMemberMethods() {
         if (memberMethods == null) {
-            final Method[] mm = type.getDeclaredMethods();
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run() {
-                    AccessibleObject.setAccessible(mm, true);
-                    return null;
-                }
-            });
-            memberMethods = mm;
+            memberMethods = AccessController.doPrivileged(
+                new PrivilegedAction<Method[]>() {
+                    public Method[] run() {
+                        final Method[] mm = type.getDeclaredMethods();
+                        AccessibleObject.setAccessible(mm, true);
+                        return mm;
+                    }
+                });
         }
         return memberMethods;
     }

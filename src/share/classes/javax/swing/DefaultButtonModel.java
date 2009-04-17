@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -326,8 +326,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable {
      * @since 1.4
      */
     public ChangeListener[] getChangeListeners() {
-        return (ChangeListener[])listenerList.getListeners(
-                ChangeListener.class);
+        return listenerList.getListeners(ChangeListener.class);
     }
 
     /**
@@ -380,8 +379,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable {
      * @since 1.4
      */
     public ActionListener[] getActionListeners() {
-        return (ActionListener[])listenerList.getListeners(
-                ActionListener.class);
+        return listenerList.getListeners(ActionListener.class);
     }
 
     /**
@@ -434,7 +432,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable {
      * @since 1.4
      */
     public ItemListener[] getItemListeners() {
-        return (ItemListener[])listenerList.getListeners(ItemListener.class);
+        return listenerList.getListeners(ItemListener.class);
     }
 
     /**

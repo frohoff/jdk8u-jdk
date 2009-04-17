@@ -1,5 +1,5 @@
 /*
- * Portions Copyright 2000-2004 Sun Microsystems, Inc.  All Rights Reserved.
+ * Portions Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -384,23 +384,23 @@ ubidi_setPara(UBiDi *pBiDi, const UChar *text, int32_t length,
         return;
     }
 
-    /* are explicit levels specified? */
-    if(embeddingLevels==NULL) {
-        /* no: determine explicit levels according to the (Xn) rules */\
-        if(getLevelsMemory(pBiDi, length)) {
-            pBiDi->levels=pBiDi->levelsMemory;
+    if (getLevelsMemory(pBiDi, length)) {
+        pBiDi->levels=pBiDi->levelsMemory;
+        /* are explicit levels specified? */
+        if(embeddingLevels==NULL) {
+            /* no: determine explicit levels according to the (Xn) rules */
             direction=resolveExplicitLevels(pBiDi);
         } else {
-            *pErrorCode=U_MEMORY_ALLOCATION_ERROR;
-            return;
+            /* set BN for all explicit codes, check that all levels are paraLevel..UBIDI_MAX_EXPLICIT_LEVEL */
+            icu_memcpy(pBiDi->levels, embeddingLevels, length);
+            direction=checkExplicitLevels(pBiDi, pErrorCode);
+            if(U_FAILURE(*pErrorCode)) {
+                 return;
+            }
         }
     } else {
-        /* set BN for all explicit codes, check that all levels are paraLevel..UBIDI_MAX_EXPLICIT_LEVEL */
-        pBiDi->levels=embeddingLevels;
-        direction=checkExplicitLevels(pBiDi, pErrorCode);
-        if(U_FAILURE(*pErrorCode)) {
-            return;
-        }
+        *pErrorCode=U_MEMORY_ALLOCATION_ERROR;
+        return;
     }
 
     /*

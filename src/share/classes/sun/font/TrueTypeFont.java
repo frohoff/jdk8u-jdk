@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -90,6 +90,7 @@ public class TrueTypeFont extends FileFont {
     public static final int ttcfTag = 0x74746366; // 'ttcf' - TTC file
     public static final int v1ttTag = 0x00010000; // 'v1tt' - Version 1 TT font
     public static final int trueTag = 0x74727565; // 'true' - Version 2 TT font
+    public static final int ottoTag = 0x4f54544f; // 'otto' - OpenType font
 
     /* -- ID's used in the 'name' table */
     public static final int MS_PLATFORM_ID = 3;
@@ -499,6 +500,7 @@ public class TrueTypeFont extends FileFont {
 
             case v1ttTag:
             case trueTag:
+            case ottoTag:
                 break;
 
             default:

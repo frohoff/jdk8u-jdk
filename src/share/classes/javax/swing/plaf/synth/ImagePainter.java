@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -66,7 +66,7 @@ class ImagePainter extends SynthPainter {
             Paint9Painter painter;
             if (cacheRef == null || (painter = cacheRef.get()) == null) {
                 painter = new Paint9Painter(30);
-                cacheRef = new WeakReference(painter);
+                cacheRef = new WeakReference<Paint9Painter>(painter);
                 AppContext.getAppContext().put(CACHE_KEY, cacheRef);
             }
             return painter;

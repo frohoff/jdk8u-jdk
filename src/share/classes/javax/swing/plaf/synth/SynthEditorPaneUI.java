@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,8 +45,8 @@ class SynthEditorPaneUI extends BasicEditorPaneUI implements SynthUI {
      * I would prefer to use UIResource instad of this.
      * Unfortunately Boolean is a final class
      */
-    private Boolean localTrue = new Boolean(true);
-    private Boolean localFalse = new Boolean(false);
+    private Boolean localTrue = Boolean.TRUE;
+    private Boolean localFalse = Boolean.FALSE;
 
     /**
      * Creates a UI for the JTextPane.
@@ -69,7 +69,7 @@ class SynthEditorPaneUI extends BasicEditorPaneUI implements SynthUI {
             c.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,
                                 localTrue);
         }
-        updateStyle((JTextComponent)getComponent());
+        updateStyle(getComponent());
     }
 
     protected void uninstallDefaults() {

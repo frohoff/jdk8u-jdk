@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -38,7 +38,7 @@ public class TestUtil {
     // executing in a different network.
     public static final String HOST = "javaweb.sfbay.sun.com";
     public static final String REFUSING_HOST = "jano1.sfbay.sun.com";
-    public static final String FAR_HOST = "theclub.ireland.sun.com";
+    public static final String FAR_HOST = "irejano.ireland.sun.com";
     public static final String UNRESOLVABLE_HOST = "blah-blah.blah-blah.blah";
 
     private TestUtil() { }
@@ -102,5 +102,4 @@ public class TestUtil {
     static boolean onWindows() {
         return osName.startsWith("Windows");
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2004-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,7 +41,7 @@ public class HotspotInternal
 
     private final static String HOTSPOT_INTERNAL_MBEAN_NAME =
         "sun.management:type=HotspotInternal";
-    private static ObjectName objName = Util.newObjectName(HOTSPOT_INTERNAL_MBEAN_NAME);
+    private static ObjectName objName = ObjectName.valueOf(HOTSPOT_INTERNAL_MBEAN_NAME);
     private MBeanServer server = null;
 
     /**

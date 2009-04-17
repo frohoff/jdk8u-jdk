@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2006-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1119,7 +1119,7 @@ public class GroupLayout implements LayoutManager2 {
      * creating one if necessary.
      */
     private ComponentInfo getComponentInfo(Component component) {
-        ComponentInfo info = (ComponentInfo)componentInfos.get(component);
+        ComponentInfo info = componentInfos.get(component);
         if (info == null) {
             info = new ComponentInfo(component);
             componentInfos.put(component, info);
@@ -1698,7 +1698,7 @@ public class GroupLayout implements LayoutManager2 {
             for (int counter = springs.size() - 1; counter >= 0; counter--) {
                 Spring spring = springs.get(counter);
                 if (spring instanceof AutoPreferredGapSpring) {
-                    ((AutoPreferredGapSpring)spring).unset();
+                    spring.unset();
                 } else if (spring instanceof Group) {
                     ((Group)spring).unsetAutopadding();
                 }

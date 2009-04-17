@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2005-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -236,8 +236,8 @@ public class CompositeDataInvocationHandler implements InvocationHandler {
         if (other == null)
             return false;
 
-        final Class proxyClass = proxy.getClass();
-        final Class otherClass = other.getClass();
+        final Class<?> proxyClass = proxy.getClass();
+        final Class<?> otherClass = other.getClass();
         if (proxyClass != otherClass)
             return false;
         InvocationHandler otherih = Proxy.getInvocationHandler(other);

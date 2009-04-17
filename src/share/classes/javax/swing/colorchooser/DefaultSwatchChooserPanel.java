@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2005 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -170,7 +170,6 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel {
         superHolder.add(mainHolder, gbc);
         gbc.insets = oldInsets;
 
-        recentSwatchPanel.addMouseListener(recentSwatchListener);
         recentSwatchPanel.setInheritsPopupMenu(true);
         JPanel recentHolder = new JPanel( new BorderLayout() );
         recentHolder.setBorder(border);
@@ -212,18 +211,20 @@ class DefaultSwatchChooserPanel extends AbstractColorChooserPanel {
 
     class RecentSwatchListener extends MouseAdapter implements Serializable {
         public void mousePressed(MouseEvent e) {
-            Color color = recentSwatchPanel.getColorForLocation(e.getX(), e.getY());
-            getColorSelectionModel().setSelectedColor(color);
-
+            if (isEnabled()) {
+                Color color = recentSwatchPanel.getColorForLocation(e.getX(), e.getY());
+                setSelectedColor(color);
+            }
         }
     }
 
     class MainSwatchListener extends MouseAdapter implements Serializable {
         public void mousePressed(MouseEvent e) {
-            Color color = swatchPanel.getColorForLocation(e.getX(), e.getY());
-            getColorSelectionModel().setSelectedColor(color);
-            recentSwatchPanel.setMostRecentColor(color);
-
+            if (isEnabled()) {
+                Color color = swatchPanel.getColorForLocation(e.getX(), e.getY());
+                setSelectedColor(color);
+                recentSwatchPanel.setMostRecentColor(color);
+            }
         }
     }
 

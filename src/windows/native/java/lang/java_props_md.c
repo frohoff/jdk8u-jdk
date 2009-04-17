@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -37,6 +37,12 @@
 #ifndef VER_PLATFORM_WIN32_WINDOWS
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
+
+#ifndef PROCESSOR_ARCHITECTURE_AMD64
+#define PROCESSOR_ARCHITECTURE_AMD64 9
+#endif
+
+typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 
 #define SHELL_KEY "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"
 
@@ -674,8 +680,21 @@ GetJavaProperties(JNIEnv* env)
     {
         char buf[100];
         OSVERSIONINFOEX ver;
+        SYSTEM_INFO si;
+        PGNSI pGNSI;
+
         ver.dwOSVersionInfoSize = sizeof(ver);
         GetVersionEx((OSVERSIONINFO *) &ver);
+
+        ZeroMemory(&si, sizeof(SYSTEM_INFO));
+        // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
+        pGNSI = (PGNSI) GetProcAddress(
+                GetModuleHandle(TEXT("kernel32.dll")),
+                "GetNativeSystemInfo");
+        if(NULL != pGNSI)
+            pGNSI(&si);
+        else
+            GetSystemInfo(&si);
 
         /*
          * From msdn page on OSVERSIONINFOEX, current as of this
@@ -690,9 +709,15 @@ GetJavaProperties(JNIEnv* env)
          * Windows 3.51                 3               51
          * Windows NT 4.0               4               0
          * Windows 2000                 5               0
-         * Windows XP                   5               1
+         * Windows XP 32 bit            5               1
          * Windows Server 2003 family   5               2
+         * Windows XP 64 bit            5               2
+         *       where ((&ver.wServicePackMinor) + 2) = 1
+         *       and  si.wProcessorArchitecture = 9
          * Windows Vista family         6               0
+         * Windows 2008                 6               0
+         *       where ((&ver.wServicePackMinor) + 2) = 1
+         * Windows 7                    6               1
          *
          * This mapping will presumably be augmented as new Windows
          * versions are released.
@@ -720,7 +745,25 @@ GetJavaProperties(JNIEnv* env)
                 switch (ver.dwMinorVersion) {
                 case  0: sprops.os_name = "Windows 2000";         break;
                 case  1: sprops.os_name = "Windows XP";           break;
-                case  2: sprops.os_name = "Windows 2003";         break;
+                case  2:
+                   /*
+                    * From MSDN OSVERSIONINFOEX and SYSTEM_INFO documentation:
+                    *
+                    * "Because the version numbers for Windows Server 2003
+                    * and Windows XP 6u4 bit are identical, you must also test
+                    * whether the wProductType member is VER_NT_WORKSTATION.
+                    * and si.wProcessorArchitecture is
+                    * PROCESSOR_ARCHITECTURE_AMD64 (which is 9)
+                    * If it is, the operating system is Windows XP 64 bit;
+                    * otherwise, it is Windows Server 2003."
+                    */
+                    if(ver.wProductType == VER_NT_WORKSTATION &&
+                       si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64) {
+                        sprops.os_name = "Windows XP"; /* 64 bit */
+                    } else {
+                        sprops.os_name = "Windows 2003";
+                    }
+                    break;
                 default: sprops.os_name = "Windows NT (unknown)"; break;
                 }
             } else if (ver.dwMajorVersion == 6) {
@@ -731,13 +774,18 @@ GetJavaProperties(JNIEnv* env)
                  * and Windows Vista are identical, you must also test
                  * whether the wProductType member is VER_NT_WORKSTATION.
                  * If wProductType is VER_NT_WORKSTATION, the operating
-                 * system is Windows Vista; otherwise, it is Windows
+                 * system is Windows Vista or 7; otherwise, it is Windows
                  * Server 2008."
                  */
-                if (ver.wProductType == VER_NT_WORKSTATION)
-                    sprops.os_name = "Windows Vista";
-                else
+                if (ver.wProductType == VER_NT_WORKSTATION) {
+                    switch (ver.dwMinorVersion) {
+                    case  0: sprops.os_name = "Windows Vista";        break;
+                    case  1: sprops.os_name = "Windows 7";            break;
+                    default: sprops.os_name = "Windows NT (unknown)";
+                    }
+                } else {
                     sprops.os_name = "Windows Server 2008";
+                }
             } else {
                 sprops.os_name = "Windows NT (unknown)";
             }

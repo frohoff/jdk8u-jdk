@@ -109,7 +109,7 @@ IMPORT_LIST += $(MS_RUNTIME_LIBRARIES:%=$(BINDIR)/%)
 $(BINDIR)/msvcrt.dll: $(MSVCRT_DLL_PATH)/msvcrt.dll
 	$(install-import-file)
 	$(CHMOD) a+x $@
-$(BINDIR)/msvcr71.dll: $(MSVCR71_DLL_PATH)/msvcr71.dll
+$(BINDIR)/$(MSVCRNN_DLL): $(MSVCRNN_DLL_PATH)/$(MSVCRNN_DLL)
 	$(install-import-file)
 	$(CHMOD) a+x $@
 
@@ -251,9 +251,11 @@ endif # INCLUDE_SA
 #
 ifdef OPENJDK
 
-include $(BUILDDIR)/common/internal/BinaryPlugs.gmk
+  ifeq ($(IMPORT_BINARY_PLUGS),true)
+    include $(BUILDDIR)/common/internal/BinaryPlugs.gmk
 
-build: import-binary-plugs
+    build: import-binary-plugs
+  endif
 
 else # !OPENJDK
 

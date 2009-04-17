@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -118,7 +118,7 @@ public abstract class ClientNotifForwarder {
         private Thread thread;
     }
 
-    public ClientNotifForwarder(ClassLoader defaultClassLoader, Map env) {
+    public ClientNotifForwarder(ClassLoader defaultClassLoader, Map<String, ?> env) {
         maxNotifications = EnvHelp.getMaxFetchNotifNumber(env);
         timeout = EnvHelp.getFetchTimeout(env);
 
@@ -296,28 +296,6 @@ public abstract class ClientNotifForwarder {
 
         infoList.clear();
 
-        if (currentFetchThread == Thread.currentThread()) {
-            /* we do not need to stop the fetching thread, because this thread is
-               used to do restarting and it will not be used to do fetching during
-               the re-registering the listeners.*/
-            return tmp;
-        }
-
-        while (state == STARTING) {
-            try {
-                wait();
-            } catch (InterruptedException ire) {
-                IOException ioe = new IOException(ire.toString());
-                EnvHelp.initCause(ioe, ire);
-
-                throw ioe;
-            }
-        }
-
-        if (state == STARTED) {
-            setState(STOPPING);
-        }
-
         return tmp;
     }
 
@@ -359,8 +337,9 @@ public abstract class ClientNotifForwarder {
         beingReconnected = false;
         notifyAll();
 
-        if (currentFetchThread == Thread.currentThread()) {
-            // no need to init, simply get the id
+        if (currentFetchThread == Thread.currentThread() ||
+              state == STARTING || state == STARTED) { // doing or waiting reconnection
+              // only update mbeanRemovedNotifID
             try {
                 mbeanRemovedNotifID = addListenerForMBeanRemovedNotif();
             } catch (Exception e) {
@@ -372,12 +351,23 @@ public abstract class ClientNotifForwarder {
                     logger.trace("init", msg, e);
                 }
             }
-        } else if (listenerInfos.length > 0) { // old listeners re-registered
-            init(true);
-        } else if (infoList.size() > 0) {
-            // but new listeners registered during reconnection
-            init(false);
-        }
+        } else {
+              while (state == STOPPING) {
+                  try {
+                      wait();
+                  } catch (InterruptedException ire) {
+                      IOException ioe = new IOException(ire.toString());
+                      EnvHelp.initCause(ioe, ire);
+                      throw ioe;
+                  }
+              }
+
+              if (listenerInfos.length > 0) { // old listeners are re-added
+                  init(true); // not update clientSequenceNumber
+              } else if (infoList.size() > 0) { // only new listeners added during reconnection
+                  init(false); // need update clientSequenceNumber
+              }
+          }
     }
 
     public synchronized void terminate() {
@@ -550,6 +540,15 @@ public abstract class ClientNotifForwarder {
             if (nr == null || shouldStop()) {
                 // tell that the thread is REALLY stopped
                 setState(STOPPED);
+
+                try {
+                      removeListenerForMBeanRemovedNotif(mbeanRemovedNotifID);
+                } catch (Exception e) {
+                    if (logger.traceOn()) {
+                        logger.trace("NotifFetcher-run",
+                                "removeListenerForMBeanRemovedNotif", e);
+                    }
+                }
             } else {
                 executor.execute(this);
             }
@@ -640,6 +639,7 @@ public abstract class ClientNotifForwarder {
             int notFoundCount = 0;
 
             NotificationResult result = null;
+            long firstEarliest = -1;
 
             while (result == null && !shouldStop()) {
                 NotificationResult nr;
@@ -662,6 +662,8 @@ public abstract class ClientNotifForwarder {
                     return null;
 
                 startSequenceNumber = nr.getNextSequenceNumber();
+                if (firstEarliest < 0)
+                    firstEarliest = nr.getEarliestSequenceNumber();
 
                 try {
                     // 1 notif to skip possible missing class
@@ -692,6 +694,17 @@ public abstract class ClientNotifForwarder {
                     (notFoundCount == 1 ? "" : "s") +
                     " because classes were missing locally";
                 lostNotifs(msg, notFoundCount);
+                // Even if result.getEarliestSequenceNumber() is now greater than
+                // it was initially, meaning some notifs have been dropped
+                // from the buffer, we don't want the caller to see that
+                // because it is then likely to renotify about the lost notifs.
+                // So we put back the first value of earliestSequenceNumber
+                // that we saw.
+                if (result != null) {
+                    result = new NotificationResult(
+                            firstEarliest, result.getNextSequenceNumber(),
+                            result.getTargetedNotifications());
+                }
             }
 
             return result;

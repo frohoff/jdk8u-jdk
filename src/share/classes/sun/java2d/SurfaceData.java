@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -93,7 +93,7 @@ import sun.awt.image.SurfaceManager;
  * retrieved the tracker.
  */
 public abstract class SurfaceData
-    implements Transparency, DisposerTarget, StateTrackable
+    implements Transparency, DisposerTarget, StateTrackable, Surface
 {
     private long pData;
     private boolean valid;
@@ -449,7 +449,8 @@ public abstract class SurfaceData
         // For now the answer can only be true in the following cases:
         if (sg2d.compositeState <= SunGraphics2D.COMP_ISCOPY &&
             sg2d.paintState <= SunGraphics2D.PAINT_ALPHACOLOR &&
-            sg2d.clipState <= SunGraphics2D.CLIP_RECTANGULAR)
+            sg2d.clipState <= SunGraphics2D.CLIP_RECTANGULAR &&
+            sg2d.surfaceData.getTransparency() == Transparency.OPAQUE)
         {
             if (haveLCDLoop == LCDLOOP_UNKNOWN) {
                 DrawGlyphListLCD loop =

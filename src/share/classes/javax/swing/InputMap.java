@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2003 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -200,7 +200,7 @@ public class InputMap implements Serializable {
             return pKeys;
         }
 
-        HashMap        keyMap = new HashMap();
+        HashMap<KeyStroke, KeyStroke> keyMap = new HashMap<KeyStroke, KeyStroke>();
         int            counter;
 
         for (counter = keys.length - 1; counter >= 0; counter--) {
@@ -212,7 +212,7 @@ public class InputMap implements Serializable {
 
         KeyStroke[]    allKeys = new KeyStroke[keyMap.size()];
 
-        return (KeyStroke[])keyMap.keySet().toArray(allKeys);
+        return keyMap.keySet().toArray(allKeys);
     }
 
     private void writeObject(ObjectOutputStream s) throws IOException {

@@ -1,5 +1,5 @@
 #
-# Copyright 2005-2007 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 2005-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -79,7 +79,6 @@ ALL_SETTINGS+=$(call addAltSetting,SLASH_JAVA)
 ALL_SETTINGS+=$(call addRequiredSetting,VARIANT)
 ALL_SETTINGS+=$(call addAltSetting,JDK_DEVTOOLS_DIR)
 ALL_SETTINGS+=$(call addOptionalSetting,ANT_HOME)
-ALL_SETTINGS+=$(call addOptionalSetting,FINDBUGS_HOME)
 ALL_SETTINGS+=$(call addAltSetting,UNIXCOMMAND_PATH)
 ALL_SETTINGS+=$(call addAltSetting,COMPILER_PATH)
 ALL_SETTINGS+=$(call addAltSetting,DEVTOOLS_PATH)
@@ -98,8 +97,8 @@ ifeq ($(PLATFORM),solaris)
 endif
 ifeq ($(PLATFORM),windows)
   ALL_SETTINGS+=$(call addAltSetting,MSVCRT_DLL_PATH)
-  ifeq ($(ARCH_DATA_MODEL), 32)
-    ALL_SETTINGS+=$(call addAltSetting,MSVCR71_DLL_PATH)
+  ifneq ($(MSVCRNN_DLL),)
+    ALL_SETTINGS+=$(call addAltSetting,MSVCRNN_DLL_PATH)
   endif
   ALL_SETTINGS+=$(call addAltSetting,MSDEVTOOLS_PATH)
 endif
@@ -119,7 +118,6 @@ ifeq ($(PLATFORM),windows)
   ALL_SETTINGS+=$(call addRequiredVersionSetting,LINK_VER)
 endif
 ALL_SETTINGS+=$(call addRequiredVersionSetting,ANT_VER)
-ALL_SETTINGS+=$(call addRequiredVersionSetting,FINDBUGS_VER)
 ALL_SETTINGS+=$(call addRequiredSetting,TEMPDIR)
 
 
@@ -169,8 +167,6 @@ ALL_SETTINGS+=$(call addRequiredSetting,ARCHPROP)
 ifeq ($(PLATFORM),windows)
   ALL_SETTINGS+=$(call addRequiredSetting,PROCESSOR_ARCHITECTURE)
   ALL_SETTINGS+=$(call addRequiredSetting,PROCESSOR_IDENTIFIER)
-  ALL_SETTINGS+=$(call addRequiredSetting,WINDOWS_VERSION)
-  ALL_SETTINGS+=$(call addRequiredSetting,WINDOWS_NT_VERSION_STRING)
   ifdef USING_CYGWIN
     ALL_SETTINGS+=$(call addRequiredSetting,USING_CYGWIN)
     ALL_SETTINGS+=$(call addRequiredVersionSetting,CYGWIN_VER)
@@ -181,13 +177,11 @@ ifeq ($(PLATFORM),windows)
   endif
 endif
 ifeq ($(PLATFORM),linux)
-  ALL_SETTINGS+=$(call addRequiredSetting,LINUX_VERSION)
-  ifneq ($(ARCH), ia64)
-    ALL_SETTINGS+=$(call addRequiredSetting,ALSA_VERSION)
-  endif
+  ALL_SETTINGS+=$(call addRequiredSetting,ALSA_VERSION)
 endif
 ALL_SETTINGS+=$(call addRequiredVersionSetting,OS_VERSION)
-ALL_SETTINGS+=$(call addRequiredSetting,OS_NAME)
+ALL_SETTINGS+=$(call addOptionalSetting,OS_VARIANT_NAME)
+ALL_SETTINGS+=$(call addOptionalSetting,OS_VARIANT_VERSION)
 ALL_SETTINGS+=$(call addRequiredSetting,TEMP_FREE_SPACE)
 ALL_SETTINGS+=$(call addRequiredSetting,FREE_SPACE)
 ALL_SETTINGS+=$(call addRequiredSetting,MB_OF_MEMORY)
@@ -251,6 +245,7 @@ ifdef OPENJDK
   ALL_SETTINGS+=$(call addAltSetting,FREETYPE_HEADERS_PATH)
   ALL_SETTINGS+=$(call addAltSetting,FREETYPE_LIB_PATH)
   ALL_SETTINGS+=$(call addHeading,OPENJDK Import Binary Plug Settings)
+  ALL_SETTINGS+=$(call addOptionalSetting,IMPORT_BINARY_PLUGS)
   ALL_SETTINGS+=$(call addAltSetting,BINARY_PLUGS_JARFILE)
   ALL_SETTINGS+=$(call addAltSetting,BINARY_PLUGS_PATH)
   ALL_SETTINGS+=$(call addAltSetting,BUILD_BINARY_PLUGS_PATH)

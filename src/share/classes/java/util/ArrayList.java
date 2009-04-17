@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -179,7 +179,6 @@ public class ArrayList<E> extends AbstractList<E>
         modCount++;
         int oldCapacity = elementData.length;
         if (minCapacity > oldCapacity) {
-            Object oldData[] = elementData;
             int newCapacity = (oldCapacity * 3)/2 + 1;
             if (newCapacity < minCapacity)
                 newCapacity = minCapacity;

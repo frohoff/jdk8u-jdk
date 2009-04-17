@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -258,6 +258,7 @@ public class GaugeMonitor extends Monitor implements GaugeMonitorMBean {
      * @return The derived gauge of the specified object.
      *
      */
+    @Override
     public synchronized Number getDerivedGauge(ObjectName object) {
         return (Number) super.getDerivedGauge(object);
     }
@@ -273,6 +274,7 @@ public class GaugeMonitor extends Monitor implements GaugeMonitorMBean {
      * @return The derived gauge timestamp of the specified object.
      *
      */
+    @Override
     public synchronized long getDerivedGaugeTimeStamp(ObjectName object) {
         return super.getDerivedGaugeTimeStamp(object);
     }
@@ -477,6 +479,7 @@ public class GaugeMonitor extends Monitor implements GaugeMonitorMBean {
      * name of the Java class of the notification and the notification
      * types sent by the gauge monitor.
      */
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         return notifsInfo.clone();
     }

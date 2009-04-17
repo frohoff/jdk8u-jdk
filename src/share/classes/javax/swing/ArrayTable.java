@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -88,10 +88,10 @@ class ArrayTable implements Cloneable {
             // Write ou the Serializable key/value pairs.
             s.writeInt(validCount);
             if (validCount > 0) {
-                for (int counter = 0; counter < keys.length; counter++) {
-                    if (keys[counter] != null) {
-                        s.writeObject(keys[counter]);
-                        s.writeObject(table.get(keys[counter]));
+                for (Object key : keys) {
+                    if (key != null) {
+                        s.writeObject(key);
+                        s.writeObject(table.get(key));
                         if (--validCount == 0) {
                             break;
                         }
@@ -315,7 +315,7 @@ class ArrayTable implements Cloneable {
      */
     private void grow() {
         Object[] array = (Object[])table;
-        Hashtable tmp = new Hashtable(array.length/2);
+        Hashtable<Object, Object> tmp = new Hashtable<Object, Object>(array.length/2);
         for (int i = 0; i<array.length; i+=2) {
             tmp.put(array[i], array[i+1]);
         }

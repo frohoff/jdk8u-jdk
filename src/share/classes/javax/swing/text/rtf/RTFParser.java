@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2000 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -92,7 +92,7 @@ abstract class RTFParser extends AbstractFilter
   // table of non-text characters in rtf
   static final boolean rtfSpecialsTable[];
   static {
-    rtfSpecialsTable = (boolean[])noSpecialsTable.clone();
+    rtfSpecialsTable = noSpecialsTable.clone();
     rtfSpecialsTable['\n'] = true;
     rtfSpecialsTable['\r'] = true;
     rtfSpecialsTable['{'] = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2003-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -54,15 +54,14 @@ public class SwingLazyValue implements UIDefaults.LazyValue {
         className = c;
         methodName = m;
         if (o != null) {
-            args = (Object[])o.clone();
+            args = o.clone();
         }
     }
 
     public Object createValue(final UIDefaults table) {
         try {
-            Class c;
             Object cl;
-            c = Class.forName(className, true, null);
+            Class<?> c = Class.forName(className, true, null);
             if (methodName != null) {
                 Class[] types = getClassArray(args);
                 Method m = c.getMethod(methodName, types);

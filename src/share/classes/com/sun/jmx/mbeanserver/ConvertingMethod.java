@@ -1,5 +1,5 @@
 /*
- * Copyright 2005-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2005-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -53,7 +53,7 @@ final class ConvertingMethod {
     }
 
     Descriptor getDescriptor() {
-        return Introspector.descriptorForElement(method);
+        return Introspector.descriptorForElement(method, false);
     }
 
     Type getGenericReturnType() {
@@ -68,12 +68,12 @@ final class ConvertingMethod {
         return method.getName();
     }
 
-    OpenType getOpenReturnType() {
+    OpenType<?> getOpenReturnType() {
         return returnMapping.getOpenType();
     }
 
-    OpenType[] getOpenParameterTypes() {
-        final OpenType[] types = new OpenType[paramMappings.length];
+    OpenType<?>[] getOpenParameterTypes() {
+        final OpenType<?>[] types = new OpenType<?>[paramMappings.length];
         for (int i = 0; i < paramMappings.length; i++)
             types[i] = paramMappings[i].getOpenType();
         return types;

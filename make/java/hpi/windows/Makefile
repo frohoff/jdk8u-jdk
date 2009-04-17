@@ -1,5 +1,5 @@
 #
-# Copyright 1999-2005 Sun Microsystems, Inc.  All Rights Reserved.
+# Copyright 1999-2008 Sun Microsystems, Inc.  All Rights Reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -37,8 +37,6 @@ include $(BUILDDIR)/common/Defs.gmk
 # windows compiler flags
 ifeq ($(PLATFORM),windows)
   CPPFLAGS_DBG += -DLOGGING
-  # Files built here do not compile with warning level 3 if warnings are fatal
-  COMPILER_WARNINGS_FATAL=false
 endif
 
 FILES_c = \

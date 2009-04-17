@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2002-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -390,7 +390,7 @@ class SynthTreeUI extends BasicTreeUI implements PropertyChangeListener,
     }
 
     private Rectangle getDropLineRect(JTree.DropLocation loc) {
-        Rectangle rect = null;
+        Rectangle rect;
         TreePath path = loc.getPath();
         int index = loc.getChildIndex();
         boolean ltr = tree.getComponentOrientation().isLeftToRight();
@@ -523,7 +523,7 @@ class SynthTreeUI extends BasicTreeUI implements PropertyChangeListener,
         // Don't paint the renderer if editing this row.
         boolean selected = tree.isRowSelected(row);
 
-        JTree.DropLocation dropLocation = (JTree.DropLocation)tree.getDropLocation();
+        JTree.DropLocation dropLocation = tree.getDropLocation();
         boolean isDrop = dropLocation != null
                          && dropLocation.getChildIndex() == -1
                          && path == dropLocation.getPath();

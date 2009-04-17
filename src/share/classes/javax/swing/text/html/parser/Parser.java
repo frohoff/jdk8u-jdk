@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -649,12 +649,10 @@ class Parser implements DTDConstants {
 
         if (!strict) {
             ContentModel content = stack.contentModel();
-            Vector elemVec = new Vector();
+            Vector<Element> elemVec = new Vector<Element>();
             if (content != null) {
                 content.getElements(elemVec);
-                for (Enumeration v = elemVec.elements(); v.hasMoreElements();) {
-                    Element e = (Element)v.nextElement();
-
+                for (Element e : elemVec) {
                     // Ensure that this element has not been included as
                     // part of the exclusions in the DTD.
                     //
@@ -1349,9 +1347,9 @@ class Parser implements DTDConstants {
                 continue;
             }
 
-            AttributeList att = null;
-            String attname = null;
-            String attvalue = null;
+            AttributeList att;
+            String attname;
+            String attvalue;
 
             if (parseIdentifier(true)) {
                 attname = getString(0);
@@ -1549,7 +1547,7 @@ class Parser implements DTDConstants {
      * Parse a start or end tag.
      */
     void parseTag() throws IOException {
-        Element elem = null;
+        Element elem;
         boolean net = false;
         boolean warned = false;
         boolean unknown = false;

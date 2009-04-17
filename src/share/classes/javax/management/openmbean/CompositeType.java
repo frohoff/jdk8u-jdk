@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -89,7 +89,7 @@ public class CompositeType extends OpenType<CompositeData> {
      * <br>&nbsp;
      * @param  itemNames  The names of the items contained in the
      *                    composite data values described by this <code>CompositeType</code> instance;
-     *                    cannot be null and should contain at least one element; no element can be a null or empty string.
+     *                    cannot be null; no element can be null or an empty string.
      *                    Note that the order in which the item names are given is not important to differentiate a
      *                    <code>CompositeType</code> instance from another;
      *                    the item names are internally stored sorted in ascending alphanumeric order.
@@ -97,7 +97,7 @@ public class CompositeType extends OpenType<CompositeData> {
      * @param  itemDescriptions  The descriptions, in the same order as <var>itemNames</var>, of the items contained in the
      *                           composite data values described by this <code>CompositeType</code> instance;
      *                           should be of the same size as <var>itemNames</var>;
-     *                           no element can be a null or empty string.
+     *                           no element can be null or an empty string.
      * <br>&nbsp;
      * @param  itemTypes  The open type instances, in the same order as <var>itemNames</var>, describing the items contained
      *                    in the composite data values described by this <code>CompositeType</code> instance;
@@ -125,7 +125,7 @@ public class CompositeType extends OpenType<CompositeData> {
         //
         super(CompositeData.class.getName(), typeName, description, false);
 
-        // Check the 3 arrays are not null or empty (ie length==0) and that there is no null element or empty string in them
+        // Check the 3 arrays are not null and that there is no null element or empty string in them
         //
         checkForNullElement(itemNames, "itemNames");
         checkForNullElement(itemDescriptions, "itemDescriptions");
@@ -329,7 +329,7 @@ public class CompositeType extends OpenType<CompositeData> {
      * @return true if {@code ot} is assignable to this open type.
      */
     @Override
-    boolean isAssignableFrom(OpenType ot) {
+    boolean isAssignableFrom(OpenType<?> ot) {
         if (!(ot instanceof CompositeType))
             return false;
         CompositeType ct = (CompositeType) ot;
@@ -420,9 +420,7 @@ public class CompositeType extends OpenType<CompositeData> {
         if (myHashCode == null) {
             int value = 0;
             value += this.getTypeName().hashCode();
-            String key;
-            for (Iterator k = nameToDescription.keySet().iterator(); k.hasNext();  ) {
-                key = (String) k.next();
+            for (String key : nameToDescription.keySet()) {
                 value += key.hashCode();
                 value += this.nameToType.get(key).hashCode();
             }
@@ -457,10 +455,10 @@ public class CompositeType extends OpenType<CompositeData> {
             result.append(getTypeName());
             result.append(",items=(");
             int i=0;
-            Iterator k=nameToType.keySet().iterator();
+            Iterator<String> k=nameToType.keySet().iterator();
             String key;
             while (k.hasNext()) {
-                key = (String) k.next();
+                key = k.next();
                 if (i > 0) result.append(",");
                 result.append("(itemName=");
                 result.append(key);

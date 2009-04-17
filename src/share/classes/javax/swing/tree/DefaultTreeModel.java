@@ -1,5 +1,5 @@
 /*
- * Copyright 1997-2007 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -453,8 +453,7 @@ public class DefaultTreeModel implements Serializable, TreeModel {
      * @since 1.4
      */
     public TreeModelListener[] getTreeModelListeners() {
-        return (TreeModelListener[])listenerList.getListeners(
-                TreeModelListener.class);
+        return listenerList.getListeners(TreeModelListener.class);
     }
 
     /**
@@ -652,7 +651,7 @@ public class DefaultTreeModel implements Serializable, TreeModel {
 
     // Serialization support.
     private void writeObject(ObjectOutputStream s) throws IOException {
-        Vector      values = new Vector();
+        Vector<Object> values = new Vector<Object>();
 
         s.defaultWriteObject();
         // Save the root, if its Serializable.

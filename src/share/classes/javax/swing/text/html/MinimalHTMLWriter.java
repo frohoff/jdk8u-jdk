@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-1999 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -97,7 +97,7 @@ public class MinimalHTMLWriter extends AbstractWriter {
      * Maps from style name as held by the Document, to the archived
      * style name (style name written out). These may differ.
      */
-    private Hashtable styleNameMapping;
+    private Hashtable<String, String> styleNameMapping;
 
     /**
      * Creates a new MinimalHTMLWriter.
@@ -134,7 +134,7 @@ public class MinimalHTMLWriter extends AbstractWriter {
      *
      */
     public void write() throws IOException, BadLocationException {
-        styleNameMapping = new Hashtable();
+        styleNameMapping = new Hashtable<String, String>();
         writeStartTag("<html>");
         writeHeader();
         writeBody();
@@ -296,7 +296,7 @@ public class MinimalHTMLWriter extends AbstractWriter {
          */
         it.current();
 
-        Element next = null;
+        Element next;
 
         writeStartTag("<body>");
 
@@ -715,7 +715,7 @@ public class MinimalHTMLWriter extends AbstractWriter {
         if (styleNameMapping == null) {
             return style;
         }
-        String retValue = (String)styleNameMapping.get(style);
+        String retValue = styleNameMapping.get(style);
         return (retValue == null) ? style : retValue;
     }
 

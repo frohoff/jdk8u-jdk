@@ -1,5 +1,5 @@
 /*
- * Copyright 1998-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 1998-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -67,8 +67,6 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
     private FilePane filePane;
     private JToggleButton listViewButton;
     private JToggleButton detailsViewButton;
-
-    private boolean useShellFolder;
 
     private JButton approveButton;
     private JButton cancelButton;
@@ -204,10 +202,6 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
         public ListSelectionListener createListSelectionListener() {
             return MetalFileChooserUI.this.createListSelectionListener(getFileChooser());
         }
-
-        public boolean usesShellFolder() {
-            return useShellFolder;
-        }
     }
 
     public void installComponents(JFileChooser fc) {
@@ -218,8 +212,6 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
 
         filePane = new FilePane(new MetalFileChooserUIAccessor());
         fc.addPropertyChangeListener(filePane);
-
-        updateUseShellFolder();
 
         // ********************************* //
         // **** Construct the top panel **** //
@@ -446,19 +438,6 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
         }
 
         groupLabels(new AlignedLabel[] { fileNameLabel, filesOfTypeLabel });
-    }
-
-    private void updateUseShellFolder() {
-        // Decide whether to use the ShellFolder class to populate shortcut
-        // panel and combobox.
-        JFileChooser fc = getFileChooser();
-        Boolean prop =
-            (Boolean)fc.getClientProperty("FileChooser.useShellFolder");
-        if (prop != null) {
-            useShellFolder = prop.booleanValue();
-        } else {
-            useShellFolder = fc.getFileSystemView().equals(FileSystemView.getFileSystemView());
-        }
     }
 
     protected JPanel getButtonPanel() {
@@ -782,11 +761,10 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
                 } else if (s.equals("componentOrientation")) {
                     ComponentOrientation o = (ComponentOrientation)e.getNewValue();
                     JFileChooser cc = (JFileChooser)e.getSource();
-                    if (o != (ComponentOrientation)e.getOldValue()) {
+                    if (o != e.getOldValue()) {
                         cc.applyComponentOrientation(o);
                     }
                 } else if (s == "FileChooser.useShellFolder") {
-                    updateUseShellFolder();
                     doDirectoryChanged(e);
                 } else if (s.equals("ancestor")) {
                     if (e.getOldValue() == null && e.getNewValue() != null) {
@@ -927,7 +905,7 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
      * Data model for a type-face selection combo-box.
      */
     protected class DirectoryComboBoxModel extends AbstractListModel implements ComboBoxModel {
-        Vector directories = new Vector();
+        Vector<File> directories = new Vector<File>();
         int[] depths = null;
         File selectedDirectory = null;
         JFileChooser chooser = getFileChooser();
@@ -953,6 +931,8 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
                 return;
             }
 
+            boolean useShellFolder = FilePane.usesShellFolder(chooser);
+
             directories.clear();
 
             File[] baseFolders;
@@ -966,7 +946,7 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
             // Get the canonical (full) path. This has the side
             // benefit of removing extraneous chars from the path,
             // for example /foo/bar/ becomes /foo/bar
-            File canonical = null;
+            File canonical;
             try {
                 canonical = ShellFolder.getNormalizedFile(directory);
             } catch (IOException e) {
@@ -979,7 +959,7 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
                 File sf = useShellFolder ? ShellFolder.getShellFolder(canonical)
                                          : canonical;
                 File f = sf;
-                Vector path = new Vector(10);
+                Vector<File> path = new Vector<File>(10);
                 do {
                     path.addElement(f);
                 } while ((f = f.getParentFile()) != null);
@@ -987,7 +967,7 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
                 int pathCount = path.size();
                 // Insert chain at appropriate place in vector
                 for (int i = 0; i < pathCount; i++) {
-                    f = (File)path.get(i);
+                    f = path.get(i);
                     if (directories.contains(f)) {
                         int topIndex = directories.indexOf(f);
                         for (int j = i-1; j >= 0; j--) {
@@ -1006,12 +986,12 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
         private void calculateDepths() {
             depths = new int[directories.size()];
             for (int i = 0; i < depths.length; i++) {
-                File dir = (File)directories.get(i);
+                File dir = directories.get(i);
                 File parent = dir.getParentFile();
                 depths[i] = 0;
                 if (parent != null) {
                     for (int j = i-1; j >= 0; j--) {
-                        if (parent.equals((File)directories.get(j))) {
+                        if (parent.equals(directories.get(j))) {
                             depths[i] = depths[j] + 1;
                             break;
                         }
@@ -1110,8 +1090,8 @@ public class MetalFileChooserUI extends BasicFileChooserUI {
             FileFilter currentFilter = getFileChooser().getFileFilter();
             boolean found = false;
             if(currentFilter != null) {
-                for(int i=0; i < filters.length; i++) {
-                    if(filters[i] == currentFilter) {
+                for (FileFilter filter : filters) {
+                    if (filter == currentFilter) {
                         found = true;
                     }
                 }

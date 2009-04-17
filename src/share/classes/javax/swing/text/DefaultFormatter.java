@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2004 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -68,7 +68,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
     private boolean commitOnEdit;
 
     /** Class used to create new instances. */
-    private Class valueClass;
+    private Class<?> valueClass;
 
     /** NavigationFilter that forwards calls back to DefaultFormatter. */
     private NavigationFilter navigationFilter;
@@ -231,7 +231,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
      * @return Object representation of text
      */
     public Object stringToValue(String string) throws ParseException {
-        Class vc = getValueClass();
+        Class<?> vc = getValueClass();
         JFormattedTextField ftf = getFormattedTextField();
 
         if (vc == null && ftf != null) {

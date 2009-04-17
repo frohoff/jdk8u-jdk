@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2006 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright 2000-2008 Sun Microsystems, Inc.  All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -191,7 +191,7 @@ public abstract class SelectionKey {
      * @throws  IllegalArgumentException
      *          If a bit in the set does not correspond to an operation that
      *          is supported by this key's channel, that is, if
-     *          <tt>set & ~(channel().validOps()) != 0</tt>
+     *          <tt>(ops & ~channel().validOps()) != 0</tt>
      *
      * @throws  CancelledKeyException
      *          If this key has been cancelled
