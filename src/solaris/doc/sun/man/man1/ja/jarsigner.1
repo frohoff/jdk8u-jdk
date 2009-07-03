@@ -1,0 +1,1621 @@
+." Copyright 2004-2006 Sun Microsystems, Inc.  All Rights Reserved.
+." DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+."
+." This code is free software; you can redistribute it and/or modify it
+." under the terms of the GNU General Public License version 2 only, as
+." published by the Free Software Foundation.
+."
+." This code is distributed in the hope that it will be useful, but WITHOUT
+." ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+." FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+." version 2 for more details (a copy is included in the LICENSE file that
+." accompanied this code).
+."
+." You should have received a copy of the GNU General Public License version
+." 2 along with this work; if not, write to the Free Software Foundation,
+." Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+."
+." Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+." CA 95054 USA or visit www.sun.com if you need additional information or
+." have any questions.
+."
+.TH jarsigner 1 "04 May 2009"
+." Generated from HTML by html2man (author: Eric Armstrong)
+
+.LP
+.SH "名前"
+jarsigner \- JAR 署名および検証ツール
+.LP
+.RS 3
+
+.LP
+.LP
+Java ARchive (JAR) ファイルの署名を生成し、署名付き JAR ファイルの署名を検証します。
+.LP
+.RE
+.SH "形式"
+.LP
+
+.LP
+.nf
+\f3
+.fl
+\fP\f3jarsigner\fP [ options ] jar\-file alias
+.fl
+\f3jarsigner\fP \-verify [ options ] jar\-file 
+.fl
+.fi
+
+.LP
+.SH "説明"
+.LP
+
+.LP
+.LP
+\f3jarsigner\fP ツールは、次の 2 つの目的で使用します。
+.LP
+.RS 3
+.TP 3
+1.
+Java ARchive (JAR) ファイルに署名を付ける 
+.TP 3
+2.
+署名付き JAR ファイルの署名と整合性を検証する 
+.RE
+
+.LP
+.LP
+JAR 機能を使うと、クラスファイル、イメージ、サウンド、およびその他のデジタルデータを単一のファイルにパッケージ化できるので、ファイルを迅速かつ容易に配布できます。開発者は、jar(1) という名前のツールを使って JAR ファイルを作成できます。技術的な観点から言えば、すべての ZIP ファイルも JAR ファイルとみなすことができます。 ただし、\f3jar\fP によって作成された JAR ファイル、または \f3jarsigner\fP によって処理された JAR ファイルには、META\-INF/MANIFEST.MF ファイルが含まれています。
+.LP
+.LP
+「デジタル署名」は、なんらかのデータ (「署名」の対象となるデータ) と、エンティティー (人、会社など) の非公開鍵とに基づいて計算されるビット列です。手書きの署名同様、デジタル署名には多くの利点があります。
+.LP
+.RS 3
+.TP 2
+o
+署名の生成に使われた非公開鍵と対になる公開鍵を使って計算を行うことで、デジタル署名が本物かどうかを検証できる 
+.TP 2
+o
+非公開鍵が他人に知られない限り、デジタル署名の偽造は不可能である 
+.TP 2
+o
+デジタル署名は、その署名が付いたデータだけを対象とするものであり、ほかのデータの署名として機能することはない 
+.TP 2
+o
+署名付きのデータは変更できない。 データが変更された場合は、その署名によってデータが本物ではないことが検証される 
+.RE
+
+.LP
+.LP
+ファイルに対してエンティティーの署名を生成するには、まず、エンティティーは、そのエンティティーに関連する公開鍵と非公開鍵のペアを持つ必要があります。 また、公開鍵を認証する 1 つまたは複数の証明書も必要です。「証明書」とは、あるエンティティーが発行したデジタル署名付きの文書で、別なエンティティーの公開鍵が特定の値であることを証明しています。
+.LP
+.LP
+\f3jarsigner\fP は、「キーストア」に含まれる鍵と証明書情報を使って、JAR ファイルのデジタル署名を生成します。キーストアは、非公開鍵と、非公開鍵に関連付けられた X.509 証明書チェーンが収められたデータベースです。キーストアの作成と管理には、keytool(1) ユーティリティーを使います。
+.LP
+.LP
+\f3jarsigner\fP は、エンティティーの非公開鍵を使って署名を生成します。署名付き JAR ファイルには、ファイルの署名に使用する非公開鍵に対応する公開鍵を保存するキーストアからとった証明書のコピーも含まれています。 \f3jarsigner\fP は、署名付き JAR ファイルのデジタル署名を、ファイル内 (の署名ブロックファイル) に含まれている証明書を使って検証することができます。
+.LP
+.LP
+5.0 以降では、\f3jarsigner\fP はタイムスタンプを含む署名を生成するので、システムやデプロイヤ (Java Plug\-in を含む) はJAR ファイルが署名証明書の有効期間中に署名されたかどうかをチェックできます。さらに、5.0 で追加された API を使用して、アプリケーションはタイムスタンプ情報を取得できます。
+.LP
+.LP
+現時点では、\f3jarsigner\fP で署名できるのは、JDK の jar(1) ツールで作成された JAR ファイル、または ZIP ファイルだけです。JAR ファイルは ZIP ファイルと同じですが、JAR ファイルには META\-INF/MANIFEST.MF ファイルが含まれている点が異なります。META\-INF/MANIFEST.MF ファイルは、\f3jarsigner\fP が ZIP ファイルに署名を付けるときに自動的に作成されます。
+.LP
+.LP
+デフォルトでは、\f3jarsigner\fP は JAR (または ZIP) ファイルに「署名」を付けます。署名付き JAR ファイルを「検証」する場合は、\f2\-verify\fP オプションを指定します。
+.LP
+.SS 
+JDK 1.1 との互換性
+.LP
+.RS 3
+
+.LP
+.LP
+\f3keytool\fP ツールと \f3jarsigner\fP ツールは、JDK 1.1 で提供されていた \f3javakey\fP ツールを完全に置き換えるものです。これらの新しいツールは \f3javakey\fP よりも多くの機能を備えており、キーストアと非公開鍵をパスワードで保護する機能や、署名の生成に加えて署名を検証する機能を持っています。
+.LP
+.LP
+新しいキーストアアーキテクチャーは、\f3javakey\fP が作成して管理していたアイデンティティーデータベースに代わるものです。キーストア形式と、JDK 1.1 の \f3javakey\fP が使っていたデータベース形式との間には下位互換性はありません。ただし、次のようなことは可能です。
+.LP
+.RS 3
+.TP 2
+o
+\f3keytool\fP の \f2\-identitydb\fP コマンドを使うと、アイデンティティーデータベースの情報をキーストアにインポートできます。 
+.TP 2
+o
+\f3jarsigner\fP は、以前に \f3javakey\fP を使って署名された JAR ファイルに署名を付けることができます。 
+.TP 2
+o
+\f3jarsigner\fP は、\f3javakey\fPを使って署名された JAR ファイルを検証できます。したがって、jarsigner は、Java 2 SDK のキーストアではなく JDK 1.1 のアイデンティティーデータベースからの署名者別名を認識し、これらを対象に処理を行うことができます。 
+.RE
+
+.LP
+.LP
+次の表は、JDK 1.1.x で署名された JAR ファイルが、Java 2 プラットフォームでどのように扱われるかを示しています。
+.LP
+.LP
+.TS
+.if \n+(b.=1 .nr d. \n(.c-\n(c.-1
+.de 35
+.ps \n(.s
+.vs \n(.vu
+.in \n(.iu
+.if \n(.u .fi
+.if \n(.j .ad
+.if \n(.j=0 .na
+..
+.nf
+.nr #~ 0
+.if n .nr #~ 0.6n
+.ds #d .d
+.if \(ts\n(.z\(ts\(ts .ds #d nl
+.fc
+.nr 33 \n(.s
+.rm 80 81 82 83 84
+.nr 34 \n(.lu
+.eo
+.am 80
+.br
+.di a+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(80 .ll \n(80u
+.in 0
+\f3JAR ファイルのタイプ\fP
+.br
+.di
+.nr a| \n(dn
+.nr a- \n(dl
+..
+.ec \
+.eo
+.am 81
+.br
+.di b+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(81 .ll \n(81u
+.in 0
+\f31.1 データベース内のアイデンティティー\fP
+.br
+.di
+.nr b| \n(dn
+.nr b- \n(dl
+..
+.ec \
+.eo
+.am 82
+.br
+.di c+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(82 .ll \n(82u
+.in 0
+\f31.1 データベースから Java 2 Platform キーストアにインポートされる信頼できるアイデンティティー (4)\fP
+.br
+.di
+.nr c| \n(dn
+.nr c- \n(dl
+..
+.ec \
+.eo
+.am 83
+.br
+.di d+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(83 .ll \n(83u
+.in 0
+\f3ポリシーファイルがアイデンティティー/別名に特権を与える\fP
+.br
+.di
+.nr d| \n(dn
+.nr d- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di e+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権
+.br
+.di
+.nr e| \n(dn
+.nr e- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di f+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権
+.br
+.di
+.nr f| \n(dn
+.nr f- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di g+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権
+.br
+.di
+.nr g| \n(dn
+.nr g- \n(dl
+..
+.ec \
+.eo
+.am 81
+.br
+.di h+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(81 .ll \n(81u
+.in 0
+あり/信頼できない
+.br
+.di
+.nr h| \n(dn
+.nr h- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di i+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権 (3)
+.br
+.di
+.nr i| \n(dn
+.nr i- \n(dl
+..
+.ec \
+.eo
+.am 81
+.br
+.di j+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(81 .ll \n(81u
+.in 0
+あり/信頼できない
+.br
+.di
+.nr j| \n(dn
+.nr j- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di k+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権 (1,3)
+.br
+.di
+.nr k| \n(dn
+.nr k- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di l+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権とポリシーファイル内で与えられる特権
+.br
+.di
+.nr l| \n(dn
+.nr l- \n(dl
+..
+.ec \
+.eo
+.am 84
+.br
+.di m+
+.35
+.ft \n(.f
+.ll \n(34u*1u/6u
+.if \n(.l<\n(84 .ll \n(84u
+.in 0
+すべてのコードに与えられるデフォルトの特権とポリシーファイル内で与えられる特権 (2)
+.br
+.di
+.nr m| \n(dn
+.nr m- \n(dl
+..
+.ec \
+.35
+.nf
+.ll \n(34u
+.nr 80 0
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名のない JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w署名付き JAR
+.if \n(80<\n(38 .nr 80 \n(38
+.80
+.rm 80
+.nr 38 \n(a-
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 81 0
+.nr 38 \wなし
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wなし
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wなし
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wなし
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wあり/信頼できる
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wあり/信頼できる
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wあり/信頼できる
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wあり/信頼できる
+.if \n(81<\n(38 .nr 81 \n(38
+.81
+.rm 81
+.nr 38 \n(b-
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \n(h-
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \n(j-
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 82 0
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wあり
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wあり
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wあり
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wあり
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 38 \wなし
+.if \n(82<\n(38 .nr 82 \n(38
+.82
+.rm 82
+.nr 38 \n(c-
+.if \n(82<\n(38 .nr 82 \n(38
+.nr 83 0
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wあり
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wあり
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wあり
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wなし
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 38 \wあり
+.if \n(83<\n(38 .nr 83 \n(38
+.83
+.rm 83
+.nr 38 \n(d-
+.if \n(83<\n(38 .nr 83 \n(38
+.nr 84 0
+.nr 38 \w\f3与えられる特権\fP
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \wすべての特権
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \wすべての特権 (1)
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \wすべての特権 (1)
+.if \n(84<\n(38 .nr 84 \n(38
+.84
+.rm 84
+.nr 38 \n(e-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(f-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(g-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(i-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(k-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(l-
+.if \n(84<\n(38 .nr 84 \n(38
+.nr 38 \n(m-
+.if \n(84<\n(38 .nr 84 \n(38
+.35
+.nf
+.ll \n(34u
+.nr 38 1n
+.nr 79 0
+.nr 40 \n(79+(0*\n(38)
+.nr 80 +\n(40
+.nr 41 \n(80+(3*\n(38)
+.nr 81 +\n(41
+.nr 42 \n(81+(3*\n(38)
+.nr 82 +\n(42
+.nr 43 \n(82+(3*\n(38)
+.nr 83 +\n(43
+.nr 44 \n(83+(3*\n(38)
+.nr 84 +\n(44
+.nr TW \n(84
+.if t .if \n(TW>\n(.li .tm Table at line 186 file Input is too wide - \n(TW units
+.fc  
+.nr #T 0-1
+.nr #a 0-1
+.eo
+.de T#
+.ds #d .d
+.if \(ts\n(.z\(ts\(ts .ds #d nl
+.mk ##
+.nr ## -1v
+.ls 1
+.ls
+..
+.ec
+.ne \n(a|u+\n(.Vu
+.ne \n(b|u+\n(.Vu
+.ne \n(c|u+\n(.Vu
+.ne \n(d|u+\n(.Vu
+.if (\n(a|+\n(#^-1v)>\n(#- .nr #- +(\n(a|+\n(#^-\n(#--1v)
+.if (\n(b|+\n(#^-1v)>\n(#- .nr #- +(\n(b|+\n(#^-\n(#--1v)
+.if (\n(c|+\n(#^-1v)>\n(#- .nr #- +(\n(c|+\n(#^-\n(#--1v)
+.if (\n(d|+\n(#^-1v)>\n(#- .nr #- +(\n(d|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'\h'|\n(41u'\h'|\n(42u'\h'|\n(43u'\h'|\n(44u'\f3与えられる特権\fP
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(40u
+.in +\n(37u
+.a+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(##u-1v
+.nr 37 \n(41u
+.in +\n(37u
+.b+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(##u-1v
+.nr 37 \n(42u
+.in +\n(37u
+.c+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(##u-1v
+.nr 37 \n(43u
+.in +\n(37u
+.d+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(e|u+\n(.Vu
+.if (\n(e|+\n(#^-1v)>\n(#- .nr #- +(\n(e|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'なし\h'|\n(42u'なし\h'|\n(43u'なし\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.e+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(f|u+\n(.Vu
+.if (\n(f|+\n(#^-1v)>\n(#- .nr #- +(\n(f|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名のない JAR\h'|\n(41u'なし\h'|\n(42u'なし\h'|\n(43u'なし\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.f+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(g|u+\n(.Vu
+.if (\n(g|+\n(#^-1v)>\n(#- .nr #- +(\n(g|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'なし\h'|\n(42u'あり\h'|\n(43u'なし\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.g+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(h|u+\n(.Vu
+.ne \n(i|u+\n(.Vu
+.if (\n(h|+\n(#^-1v)>\n(#- .nr #- +(\n(h|+\n(#^-\n(#--1v)
+.if (\n(i|+\n(#^-1v)>\n(#- .nr #- +(\n(i|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'\h'|\n(42u'なし\h'|\n(43u'なし\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(41u
+.in +\n(37u
+.h+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.i+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(j|u+\n(.Vu
+.ne \n(k|u+\n(.Vu
+.if (\n(j|+\n(#^-1v)>\n(#- .nr #- +(\n(j|+\n(#^-\n(#--1v)
+.if (\n(k|+\n(#^-1v)>\n(#- .nr #- +(\n(k|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'\h'|\n(42u'なし\h'|\n(43u'あり\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(41u
+.in +\n(37u
+.j+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.k+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(l|u+\n(.Vu
+.if (\n(l|+\n(#^-1v)>\n(#- .nr #- +(\n(l|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'なし\h'|\n(42u'あり\h'|\n(43u'あり\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.l+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ne \n(m|u+\n(.Vu
+.if (\n(m|+\n(#^-1v)>\n(#- .nr #- +(\n(m|+\n(#^-\n(#--1v)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'あり/信頼できる\h'|\n(42u'あり\h'|\n(43u'あり\h'|\n(44u'
+.mk ##
+.nr 31 \n(##
+.sp |\n(##u-1v
+.nr 37 \n(44u
+.in +\n(37u
+.m+
+.in -\n(37u
+.mk 32
+.if \n(32>\n(31 .nr 31 \n(32
+.sp |\n(31u
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'あり/信頼できる\h'|\n(42u'なし\h'|\n(43u'なし\h'|\n(44u'すべての特権
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'あり/信頼できる\h'|\n(42u'あり\h'|\n(43u'なし\h'|\n(44u'すべての特権 (1)
+.ta \n(80u \n(81u \n(82u \n(83u \n(84u 
+.nr 31 \n(.f
+.nr 35 1m
+\&\h'|\n(40u'署名付き JAR\h'|\n(41u'あり/信頼できる\h'|\n(42u'なし\h'|\n(43u'あり\h'|\n(44u'すべての特権 (1)
+.fc
+.nr T. 1
+.T# 1
+.35
+.rm a+
+.rm b+
+.rm c+
+.rm d+
+.rm e+
+.rm f+
+.rm g+
+.rm h+
+.rm i+
+.rm j+
+.rm k+
+.rm l+
+.rm m+
+.TE
+.if \n-(b.=0 .nr c. \n(.c-\n(d.-50
+
+.LP
+.LP
+注 \-
+.LP
+.RS 3
+.TP 3
+1.
+ポリシーファイル内にアイデンティティー/別名についての言及がある場合、それをキーストアにインポートして、ポリシーファイルの設定が与えられた特権に反映されるようにする必要があります。 
+.TP 3
+2.
+ポリシーファイル/キーストアの組み合わせは、アイデンティティーデータベース内の信頼できるアイデンティティーよりも優先されます。 
+.TP 3
+3.
+Java 2 プラットフォームでは、信頼できないアイデンティティーは無視されます。 
+.TP 3
+4.
+Java 2 SDK キーストアにインポートできるのは、信頼できるアイデンティティーだけです。 
+.RE
+
+.LP
+.SS 
+キーストアの別名
+.LP
+.RS 3
+
+.LP
+.LP
+キーストアのすべてのエントリは、一意の「別名」を介してアクセスされます。
+.LP
+.LP
+\f3jarsigner\fP を使って JAR ファイルに署名を付けるときは、署名の生成に必要な非公開鍵を含むキーストアエントリの別名を指定する必要があります。たとえば、次の例は、working ディレクトリの mystore という名前のキーストアに含まれる別名 duke に関連付けられた非公開鍵を使って、MyJARFile.jar という名前の JAR ファイルに署名を付けます。出力ファイルは指定されていないので、MyJARFile.jar は署名付きの JAR ファイルによって上書きされます。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-keystore /working/mystore \-storepass myspass
+.fl
+      \-keypass dukekeypasswd MyJARFile.jar duke 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+キーストアはパスワードで保護されているので、ストアのパスワード (上の例では mypass) を指定する必要があります。コマンド行でストアのパスワードを指定しないと、パスワードの入力を求められます。同様に、非公開鍵もキーストア内でパスワードによって保護されているため、非公開鍵のパスワード (上の例では dukekeypasswd) を指定する必要があります。 コマンド行で非公開鍵のパスワードを指定していない、また、指定したパスワートが保存されているパスワードと違っている場合には、非公開鍵のパスワードの入力を求められます。
+.LP
+.RE
+.SS 
+キーストアの場所
+.LP
+.RS 3
+
+.LP
+.LP
+\f3jarsigner\fP には、使用するキーストアの URL を指定する \f2\-keystore\fP オプションがあります。キーストアは、デフォルトではユーザーのホームディレクトリの \f2.keystore\fP という名前のファイルに格納されます。 ユーザーのホームディレクトリは、\f2user.home\fP システムプロパティーによって決まります。Solaris システムの場合、\f2user.home\fP がデフォルトでユーザーのホームディレクトリになっています。
+.LP
+.LP
+\f2\-keystore\fP オプションからの入力ストリームは、\f2KeyStore.load\fP メソッドに渡されます。URL として \f2NONE\fP が指定されている場合は、null のストリームが \f2KeyStore.load\fP メソッドに渡されます。\f2NONE\fP は、\f2KeyStore\fP がファイルベースではなく、たとえば、ハードウェアトークンデバイスに置かれている場合に指定します。
+.LP
+.RE
+.SS 
+キーストアの実装
+.LP
+.RS 3
+
+.LP
+.LP
+\f2java.security\fP パッケージで提供される \f2KeyStore\fP クラスには、キーストア内の情報に対するアクセスと変更を行うための明確に定義されたインタフェースが用意されています。キーストアの固定実装としては、それぞれが特定の「タイプ」のキーストアを対象とする複数の異なる実装が存在可能です。
+.LP
+.LP
+現在、キーストアの実装を使用するものとして、\f3keytool\fP と \f3jarsigner\fP の 2 つのコマンド行ツールと、\f3Policy Tool\fP という名前の 1 つの GUI ベースのツールがあります。\f2KeyStore\fP は public として使用可能なので、Java 2 SDK ユーザーは KeyStore を使ったほかのセキュリティーアプリケーションも作成できます。
+.LP
+.LP
+キーストアには、Sun が提供する組み込みのデフォルトの実装があります。これは、JKS という名前の独自のキーストアタイプ (形式) を利用するもので、キーストアをファイルとして実装しています。この実装では、個々の非公開鍵は個別のパスワードによって保護され、キーストア全体の整合性も (非公開鍵とは別の) パスワードによって保護されます。
+.LP
+.LP
+キーストアの実装は、プロバイダベースです。具体的には、\f2KeyStore\fP が提供するアプリケーションインタフェースは、Service Provider Interface (SPI) という形で実装されています。つまり、対応する \f2KeystoreSpi\fP 抽象クラス (これも \f2java.security\fP パッケージに含まれている) があり、このクラスが Service Provider Interface のメソッドを定義しています。 これらのメソッドは、「プロバイダ」が実装しなければなりません。ここで、「プロバイダ」とは、Java Security API によってアクセス可能なサービスのサブセットに対し、その固定実装を提供するパッケージまたはパッケージの集合のことです。したがって、キーストアの実装を提供するには、
+.na
+\f2「Java 暗号化アーキテクチャー用プロバイダの実装方法」\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/security/crypto/HowToImplAProvider.htmlで説明しているように、クライアントが「プロバイダ」を実装し、KeystoreSpi サブクラスの実装を提供する必要があります。
+.LP
+.LP
+アプリケーションでは、\f2KeyStore\fP クラスが提供する getInstance ファクトリメソッドを使うことで、さまざまなプロバイダから異なる「タイプ」のキーストアの実装を選択できます。キーストアのタイプは、キーストア情報の格納形式とデータ形式を定義するとともに、キーストア内の非公開鍵とキーストア自体の整合性を保護するために使われるアルゴリズムを定義します。異なるタイプのキーストアの実装には、互換性はありません。
+.LP
+.LP
+\f3keytool\fP は、任意のファイルベースのキーストア実装で動作します。keytool は、コマンド行から渡されたキーストアの場所をファイル名として扱い、これを FileInputStream に変換して、FileInputStream からキーストアの情報をロードします。一方、\f3jarsigner\fP ツールと \f3policytool\fP ツールは、URL で指定可能な任意の場所からキーストアを読み込むことができます。
+.LP
+.LP
+\f3jarsigner\fP と \f3keytool\fP の場合、\f2\-storetype\fP オプションを使ってコマンド行でキーストアのタイプを指定できます。\f3Policy Tool\fP の場合は、[Edit] メニューの [Change Keystore] コマンドを使ってキーストアのタイプを指定できます。
+.LP
+.LP
+キーストアのタイプを明示的に指定しない場合、keytool、jarsigner、および policytool の各ツールは、セキュリティープロパティーファイル内で指定された \f2keystore.type\fP プロパティーの値に基づいてキーストアの実装を選択します。セキュリティープロパティーファイルは、\f2java.security\fP という名前で SDK セキュリティープロパティーディレクトリ \f2java.home\fP/lib/security に置かれています。 \f2java.home\fP は、実行環境のディレクトリ (SDK の \f2jre\fP ディレクトリまたは Java 2 Runtime Environment の最上位のディレクトリ) です。
+.LP
+.LP
+各ツールは、\f2keystore.type\fP の値を取得し、この値で指定されたタイプのキーストアを実装しているプロバイダが見つかるまで、現在インストールされているすべてのプロバイダを調べます。目的のプロバイダが見つかると、そのプロバイダからのキーストアの実装を使います。
+.LP
+.LP
+\f2KeyStore\fP クラスでは \f2getDefaultType\fP という名前の static メソッドが定義されており、アプリケーションとアプレットはこのメソッドを使うことで \f2keystore.type\fP プロパティーの値を取得できます。次のコードは、デフォルトのキーストアタイプ (\f2keystore.type\fP プロパティーで指定されたタイプ) のインスタンスを生成します。
+.LP
+.nf
+\f3
+.fl
+    KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+.fl
+\fP
+.fi
+
+.LP
+.LP
+デフォルトのキーストアタイプは JKS (Sun が提供する独自のタイプのキーストアの実装) です。これは、セキュリティープロパティーファイル内の次の行によって指定されています。
+.LP
+.nf
+\f3
+.fl
+    keystore.type=jks
+.fl
+\fP
+.fi
+
+.LP
+.LP
+注:キーストアのタイプの指定では、大文字と小文字は区別されません。たとえば、JKS と jks は同じものとして扱われます。
+.LP
+.LP
+各ツールでデフォルト以外のキーストアの実装を使用するには、上の行を変更して別のキーストアのタイプを指定します。たとえば、pkcs12 と呼ばれるタイプのキーストアの実装を提供しているプロバイダパッケージを使用するには、上の行を次のように変更します。
+.LP
+.nf
+\f3
+.fl
+    keystore.type=pkcs12
+.fl
+\fP
+.fi
+
+.LP
+.LP
+PKCS#11 プロバイダパッケージを使用する場合、その詳細については、「Java PKCS#11 Reference Guide」にある
+.na
+\f2「KeyTool and JarSigner」\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html#KeyToolJarSignerの節を参照してください。
+.LP
+.RE
+.RE
+.SS 
+サポートされるアルゴリズム
+.LP
+.RS 3
+
+.LP
+.LP
+デフォルトでは、\f3jarsigner\fP は次のどちらかのアルゴリズムを使って JAR ファイルに署名します。
+.LP
+.RS 3
+.TP 2
+o
+SHA\-1 ダイジェストアルゴリズムを使った DSA (デジタル署名アルゴリズム) 
+.TP 2
+o
+MD5 ダイジェストアルゴリズムを使った RSA アルゴリズム 
+.RE
+
+.LP
+.LP
+具体的には、署名者の公開鍵と非公開鍵が DSA 鍵である場合、\f3jarsigner\fP は SHA1withDSA アルゴリズムを使って JAR ファイルに署名を付けます。署名者の鍵が RSA 鍵である場合、\f3jarsigner\fP は MD5withRSA アルゴリズムを使って JAR ファイルに署名を付けます。
+.LP
+.LP
+これらのデフォルトの署名アルゴリズムは、\f2\-sigalg\fP オプションを使ってオーバーライドできます。
+.LP
+.RE
+.SS 
+署名付き JAR ファイル
+.LP
+.RS 3
+
+.LP
+.LP
+\f3jarsigner\fP を使って JAR ファイルに署名を付けた場合、出力される署名付き JAR ファイルは入力 JAR ファイルと同じですが、次の 2 つの追加ファイルが META\-INF ディレクトリに置かれる点が異なります。
+.LP
+.RS 3
+.TP 2
+o
+.SF 拡張子の付いた署名ファイル 
+.TP 2
+o
+.DSA 拡張子の付いた署名ブロックファイル 
+.RE
+
+.LP
+.LP
+これら 2 つのファイルのベースファイル名は、\f2\-sigFile\fP オプションの値から作成されます。たとえば、次のようにオプションを指定したとします。
+.LP
+.nf
+\f3
+.fl
+  \-sigFile MKSIGN
+.fl
+\fP
+.fi
+
+.LP
+.LP
+この場合、ファイル名はそれぞれ MKSIGN.SF と MKSIGN.DSA になります。
+.LP
+.LP
+コマンド行で \f2\-sigfile\fP オプションを指定しなかった場合、.SF ファイルと .DSA ファイルのベースファイル名は、コマンド行で指定された別名の先頭の 8 文字をすべて大文字に変換したものになります。別名が 8 文字未満の場合は、別名がそのまま使われます。別名の中に、署名ファイル名に使用できない文字が含まれている場合は、該当する文字を下線 (_) に置き換えてファイル名が作成されます。使用できる文字は、アルファベット、数字、下線 (_)、ハイフンです。
+.LP
+\f3署名 (.SF) ファイル\fP
+.LP
+.RS 3
+
+.LP
+.LP
+署名ファイル (.SF ファイル) は、\f3jarsigner\fP で署名を付けた JAR ファイルに常に含まれるマニフェストファイルと似ています。つまり、マニフェストファイル同様、.SF ファイルには、JAR ファイルに含まれているソースファイルごとに、次の 3 つの行があります。
+.LP
+.RS 3
+.TP 2
+o
+ファイル名 
+.TP 2
+o
+使われているダイジェストアルゴリズム (SHA) の名前 
+.TP 2
+o
+SHA ダイジェストの値 
+.RE
+
+.LP
+.LP
+マニフェストファイルでは、SHA ダイジェストの値は、ソースファイルのバイナリデータのダイジェスト (ハッシュ) です。一方、.SF ファイルでは、ソースファイルのダイジェストの値は、マニフェストファイル中の該当するソースファイルに対応する 3 行のハッシュです。
+.LP
+.LP
+署名ファイルには、デフォルトでマニフェストファイル全体のハッシュも含まれています。後述の「JAR ファイルの検証」で説明するように、このヘッダーの存在によって検証の最適化が可能になっています。
+.LP
+.RE
+\f3署名ブロック (.DSA) ファイル\fP
+.LP
+.RS 3
+
+.LP
+.LP
+.SF ファイルには署名が付けられ、署名は .DSA ファイルに置かれます。.DSA ファイルには、キーストアからの証明書または証明書チェーンも符号化された形で含まれています。 証明書または証明書チェーンは、署名に使われた非公開鍵に対応する公開鍵を認証します。
+.LP
+.RE
+.RE
+.SS 
+署名タイムスタンプ
+.LP
+.RS 3
+
+.LP
+.LP
+J2SE 5.0 リリースの \f2jarsigner\fP ツールは、JAR ファイルの署名時に署名タイムスタンプを生成および格納できるようになりました。さらに、\f2jarsigner\fP は代替署名機構をサポートします。この動作は省略可能で、署名時に次の各オプションによって制御されます。
+.LP
+.RS 3
+.TP 2
+o
+\f2\-tsa url\fP 
+.TP 2
+o
+\f2\-tsacert alias\fP 
+.TP 2
+o
+\f2\-altsigner class\fP 
+.TP 2
+o
+\f2\-altsignerpath classpathlist\fP 
+.RE
+
+.LP
+.LP
+これらの各オプションの詳細については、後述の「オプション」節を参照してください。
+.LP
+.RE
+.SS 
+JAR ファイルの検証
+.LP
+.RS 3
+
+.LP
+.LP
+JAR ファイルの検証が成功するのは、署名が有効であり、かつ署名の生成以後に JAR ファイル内のどのファイルも変更されていない場合です。JAR ファイルの検証は、次の手順で行われます。
+.LP
+.RS 3
+.TP 3
+1.
+.SF ファイルそれ自体の署名を検証します。 
+.LP
+この手順では、各署名ブロック (.DSA) ファイルに格納されている署名が、実際に、公開鍵に対応する非公開鍵を使って生成されたものであることを確認します。 .DSA ファイルには、公開鍵の証明書 (または証明書チェーン) も含まれています。また、この手順では、目的の署名が、対応する署名 (.SF) ファイル内の有効な署名であるかどうかを調べ、.SF ファイルが改変されていないことも確認します。  
+.TP 3
+2.
+.SF ファイル内の各エントリのダイジェストをマニフェスト内の対応する各セクションと突き合わせて検証します。 
+.LP
+.SF ファイルには、マニフェストファイル全体のハッシュが格納されたヘッダーがデフォルトで含まれています。このヘッダーが存在する場合は、ヘッダー内のハッシュが実際にマニフェストファイルのハッシュと一致するかどうかを検証することができます。ハッシュが一致する場合は、次の手順に進みます。 
+.LP
+ハッシュが一致しない場合は、効率的には劣る方法を使って検証を行います。 具体的には、.SF ファイル内の各ソースファイル情報セクションのハッシュが、マニフェストファイル内の対応するセクションのハッシュと一致するかどうかを確認します (「署名 (.SF) ファイル」を参照)。 
+.LP
+.SF ファイルのヘッダーに格納されたマニフェストファイルのハッシュと、実際のマニフェストファイルのハッシュとが一致しない場合は、署名 (および .SF ファイル) の生成後に、JAR ファイルに 1 つ以上のファイルが追加 (\f2jar\fP ツールを使用) された可能性があります。\f2jar\fP ツールを使ってファイルを追加した場合、マニフェストファイルは変更されますが (新しいファイル用のセクションが追加される)、.SF ファイルは変更されません。この場合、.SF ファイルのヘッダー以外のセクションに格納されたハッシュが、マニフェストファイル内の対応するセクションのハッシュと一致するときは、署名の生成時に JAR ファイル内に存在していたファイルのうち、どのファイルも変更されていないことになり、検証は成功したものとして扱われます。  
+.TP 3
+3.
+JAR ファイル内のファイルのうち、.SF ファイル内にエントリを持つ各ファイルを読み込みます。読み込み中にファイルのダイジェストを計算し、結果をマニフェストセクション内の該当するファイルのダイジェストと比較します。2 つのダイジェストは同じでなければならず、そうでない場合は検証が失敗します。 
+.RE
+
+.LP
+.LP
+検証プロセスの途中でなんらかの重大な検証エラーが発生した場合、検証プロセスは中止され、セキュリティー例外がスローされます。スローされたセキュリティー例外は、\f3jarsigner\fP がキャッチして表示します。
+.LP
+.RE
+.SS 
+1 つの JAR ファイルを対象とする複数の署名
+.LP
+.RS 3
+
+.LP
+.LP
+1 つの JAR ファイルに対して \f3jarsigner\fP ツールを複数回実行し、実行のたびに、異なるユーザーの別名を指定すれば、JAR ファイルに複数のユーザーの署名を付けることができます。
+.LP
+.nf
+\f3
+.fl
+  jarsigner myBundle.jar susan
+.fl
+  jarsigner myBundle.jar kevin
+.fl
+\fP
+.fi
+
+.LP
+.LP
+JAR ファイルが複数回署名されている場合、その JAR ファイルには .SF ファイルと .DSA ファイルの対が複数含まれることになります。 .SF ファイルと .DSA ファイルの対は、1 回の署名に対して 1 つ作成されます。したがって、上の例で出力される JAR ファイルには、次の名前を持つファイルが含まれます。
+.LP
+.nf
+\f3
+.fl
+  SUSAN.SF
+.fl
+  SUSAN.DSA
+.fl
+  KEVIN.SF
+.fl
+  KEVIN.DSA
+.fl
+\fP
+.fi
+
+.LP
+.LP
+注:JAR ファイルでは、JDK 1.1 の \f3javakey\fP ツールで生成された署名と \f3jarsigner\fP で生成された署名が混在できます。つまり、すでに \f3javakey\fP を使って署名が付けられている JAR ファイルに、\f3jarsigner\fP を使って署名を付けることができます。
+.LP
+.RE
+.SH "オプション"
+.LP
+
+.LP
+.LP
+以下では、\f3jarsigner\fP のオプションについて説明します。注:
+.LP
+.RS 3
+.TP 2
+o
+どのオプション名にも先頭にマイナス記号 (\-) が付く 
+.TP 2
+o
+オプションは任意の順序で指定できる 
+.TP 2
+o
+イタリック体の項目の実際の値 (オプションの値) は、ユーザーが指定する必要がある 
+.TP 2
+o
+\f2\-keystore\fP、\f2\-storepass\fP、\f2\-keypass\fP、\f2\-sigfile\fP、\f2\-sigalg\fP、\f2\-digestalg\fP および \f2\-signedjar\fP の各オプションを使用できるのは、JAR ファイルに署名を付ける場合だけである。 これらのオプションは、JAR ファイルを検証する場合には使用できない。同様に、別名をコマンド行で指定するのは、JAR ファイルに署名を付ける場合だけである 
+.RE
+
+.LP
+.RS 3
+.TP 3
+\-keystore url 
+キーストアの場所を示す URL を指定します。デフォルトは、ユーザーのホームディレクトリ内のファイル \f2.keystore\fP です。 ユーザーのホームディレクトリは、user.home システムプロパティーによって決まります。 
+.LP
+署名するときはキーストアが必要です。 このため、デフォルトのキーストアが存在しない場合、あるいはデフォルト以外のほかのキーストアを使用する場合は、キーストアを明示的に指定する必要があります。 
+.LP
+検証するときはキーストアは必要ありません。 ただし、キーストアが指定されているか、あるいはデフォルトのキーストアが存在していて、さらに \f2\-verbose\fP オプションも指定されている場合は、JAR ファイルの検証に使われる証明書がキーストアに存在するかどうかについての追加情報が出力されます。 
+.LP
+注:\f2\-keystore\fP の引数には、URL の代わりにファイル名 (とパス) を指定できます。 ファイル名 (とパス) を指定した場合は、「file:」URL として扱われます。たとえば、次のように指定できます。 
+.nf
+\f3
+.fl
+  \-keystore \fP\f4filePathAndName\fP\f3
+.fl
+\fP
+.fi
+これは、次の指定と同じものとして扱われます。 
+.nf
+\f3
+.fl
+  \-keystore file:\fP\f4filePathAndName\fP\f3
+.fl
+\fP
+.fi
+JRE の \f2$JAVA_HOME/lib/security\fP ディレクトリに格納された \f2java.security\fP セキュリティープロパティーファイル内で Sun PKCS#11 プロバイダが設定されている場合、keytool と jarsigner は PKCS#11 トークンに基づいて動作できます。 次のオプションを指定します。 
+.RS 3
+.TP 2
+o
+\f2\-keystore NONE\fP 
+.TP 2
+o
+\f2\-storetype PKCS11\fP 
+.RE
+たとえば、次のコマンドは、設定された PKCS#11 トークンの内容を一覧表示します。 
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+   jarsigner \-keystore NONE \-storetype PKCS11 \-list
+.fl
+  
+.fl
+\fP
+.fi
+.RE
+.TP 3
+\-storetype storetype 
+インスタンスを生成するキーストアのタイプを指定します。デフォルトのキーストアタイプは、セキュリティープロパティーファイル内の keystore.type プロパティーの値で指定されたタイプです。 この値は、\f2java.security.KeyStore\fP の static \f2getDefaultType\fP メソッドで取得できます。 
+.LP
+\f2\-storepass\fP オプションを使って PCKS#11 トークンの PIN を指定することもできます。何も指定しなかった場合、keytool と jarsigner はユーザーにトークン PIN の 入力を求めます。トークンに保護された認証パス (専用の PIN パッドや生体読み取り機など) がある場合、\f2\-protected\fP オプションを指定する必要がありますが、パスワードオプションを指定する必要はありません。  
+.TP 3
+\-storepass password 
+キーストアにアクセスするのに必要なパスワードを指定します。このオプションが必要なのは、JAR ファイルに署名を付けるときだけです (JAR ファイルを検証するときは不要)。署名を付けるときに、コマンド行で \f2\-storepass\fP オプションを指定しなかった場合は、パスワードの入力を求められます。 
+.LP
+注:テストを目的とする場合、またはセキュリティー保護されたシステムを使用している場合以外は、コマンド行やスクリプトでパスワードを指定しないでください。また、password プロンプトでパスワードを入力すると、入力したパスワードがエコーされ、そのまま画面に表示されます。 このため、周囲にほかのユーザーがいる場合は、パスワードを見られないように注意してください。  
+.TP 3
+\-keypass password 
+コマンド行で指定された別名に対応するキーストアエントリの非公開鍵を保護するのに使うパスワードを指定します。\f3jarsigner\fP を使って JAR ファイルに署名を付けるときは、パスワードが必要です。コマンド行でパスワードが指定されておらず、必要なパスワードがストアのパスワードと異なる場合は、パスワードの入力を求められます。 
+.LP
+注:テストを目的とする場合、またはセキュリティー保護されたシステムを使用している場合以外は、コマンド行やスクリプトでパスワードを指定しないでください。また、password プロンプトでパスワードを入力すると、入力したパスワードがエコーされ、そのまま画面に表示されます。 このため、周囲にほかのユーザーがいる場合は、パスワードを見られないように注意してください。  
+.TP 3
+\-sigfile file 
+.SF ファイルと .DSA ファイルの生成に使うベースファイル名を指定します。たとえば、\f2file\fP に DUKESIGN を指定すると、生成される .SF ファイルと .DSA ファイルの名前は、それぞれ DUKESIGN.SF と DUKESIGN.DSA になります。 これらのファイルは、署名付き JAR ファイルの META\-INF ディレクトリに置かれます。 
+.LP
+\f2file\fP に使用できる文字は「a\-zA\-Z0\-9_\-」です。つまり、文字、数字、下線、およびハイフンだけを使用できます。注:.SF および .DSA のファイル名では、小文字はすべて大文字に変換されます。 
+.LP
+コマンド行で \f2\-sigfile\fP オプションを指定しなかった場合、.SF ファイルと .DSA ファイルのベースファイル名は、コマンド行で指定された別名の先頭の 8 文字をすべて大文字に変換したものになります。別名が 8 文字未満の場合は、別名がそのまま使われます。別名の中に、署名ファイル名に使用できない文字が含まれている場合は、該当する文字を下線 (_) に置き換えてファイル名が作成されます。  
+.TP 3
+\-sigalg algorithm 
+.RS 3
+
+.LP
+JAR ファイルの署名に使用する署名アルゴリズムの名前を指定します。 
+.LP
+標準署名アルゴリズム名の一覧については、「Java Cryptography Architecture」にある 
+.na
+\f2「Appendix A 」\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/security/crypto/CryptoSpec.html#AppAを参照してください。このアルゴリズムは、JAR ファイルの署名に使用する秘密鍵と互換性のあるものでなければなりません。このオプションを指定しなかった場合、秘密鍵のタイプに応じて SHA1withDSA、MD5withRSA のいずれかが使用されます。指定されたアルゴリズムの実装を提供するプロバイダが静的にインストールされているか、あるいはユーザーがそのようなプロバイダを \f2\-providerClass\fP オプションを使って指定する必要があります。 そうでない場合、コマンドの実行が失敗します。
+.LP
+.RE
+.TP 3
+\-digestalg algorithm 
+.RS 3
+JAR ファイルのエントリをダイジェストする際に使用するメッセージダイジェストアルゴリズムの名前を指定します。 
+.LP
+標準メッセージダイジェストアルゴリズム名の一覧については、「Java Cryptography Architecture」にある 
+.na
+\f2「Appendix A 」\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/security/crypto/CryptoSpec.html#AppAを参照してください。このオプションを指定しなかった場合、SHA\-1 が使用されます。指定されたアルゴリズムの実装を提供するプロバイダが静的にインストールされているか、あるいはユーザーがそのようなプロバイダを \f2\-providerClass\fP オプションを使って指定する必要があります。 そうでない場合、コマンドの実行が失敗します。
+.LP
+.RE
+.TP 3
+\-signedjar file 
+署名付き JAR ファイルの名前を指定します。 
+.LP
+コマンド行で名前を指定しなかった場合は、入力 JAR ファイル (署名の対象となる JAR ファイル) の名前と同じ名前が使われます。 この場合、入力 JAR ファイルは署名付き JAR ファイルによって上書きされます。  
+.TP 3
+\-verify 
+コマンド行でこのオプションが指定されている場合は、指定された JAR ファイルが検証されます。JAR ファイルへの署名は行われません。 検証が成功すると、「jar が検証されました。」 というメッセージが表示されます。署名されていない JAR ファイル、またはサポートされていないアルゴリズム (RSA プロバイダのインストールを終了していない場合の RSA など) を使って署名された JAR ファイルを検証しようとすると、「jar は署名されていません。(署名が見つからないか、構文解析できません)」というメッセージが表示されます。 
+.LP
+署名付き JAR ファイルは、\f3jarsigner\fP または JDK 1.1 の \f3javakey\fP ツール、あるいはその両方を使って検証できます。 
+.LP
+検証についての詳細は、「JAR ファイルの検証」を参照してください。  
+.TP 3
+\-certs 
+コマンド行で、\f2\-verify\fP および \f2\-verbose\fP オプションとともにこのオプションが指定されている場合は、JAR ファイルの各署名者の証明書情報も出力されます。証明書情報には次のものが含まれます。 
+.RS 3
+.TP 2
+o
+署名者の公開鍵を証明する (.DSA ファイルに格納された) 証明書の種類の名前 
+.TP 2
+o
+証明書が X.509 証明書 (つまり、\f2java.security.cert.X509Certificate\fP のインスタンス) である場合は、署名者の識別名 
+.RE
+.LP
+キーストアの確認も行われます。コマンド行でキーストアの値が指定されていない場合、デフォルトのキーストアファイルがあれば、検査されます。署名者の公開鍵の証明書がキーストア内のエントリと一致した場合は、次の情報も表示されます。 
+.RS 3
+.TP 2
+o
+署名者に該当するキーストアエントリの別名。 この別名は括弧で囲まれます。ただし、キーストアではなく JDK 1.1 のアイデンティティーデータベースに由来する署名者の場合は、括弧ではなく大括弧で囲まれます。 
+.RE
+.TP 3
+\-verbose 
+コマンド行でこのオプションが指定されている場合、\f3jarsigner\fP は「冗長」モードで動作し、JAR の署名または検証の進行状況に関する追加情報を出力します。 
+.TP 3
+\-internalsf 
+以前は、JAR ファイルの署名時に生成された .DSA (署名ブロック) ファイルの中に、生成された .SF ファイル (署名ファイル) の完全なコピーが符号化された形で含まれていました。この動作は変更されました。この動作は変更になり、現在では、出力 JAR ファイル全体のサイズを小さくするために、デフォルトでは .SF ファイルが .DSA ファイルに含まれないようになっています。ただし、コマンド行で \f2\-internalsf\fP オプションを指定すると、以前と同じように動作します。\f3このオプションは、テストを行う場合には便利ですが、それ以外には使用しないでください。 このオプションを使用すると、有益な最適化が行われなくなります。\fP 
+.TP 3
+\-sectionsonly 
+コマンド行でこのオプションが指定されている場合、JAR ファイルの署名時に生成される .SF ファイル (署名ファイル) には、マニフェストファイル全体のハッシュを含むヘッダーは追加されません。この場合、.SF ファイルに含まれるのは、JAR ファイル内の各ソースファイルに関する情報およびハッシュだけです。 詳細は、「署名 (.SF) ファイル」を参照してください。 
+.LP
+デフォルトでは、最適化を行うために、マニフェストファイル全体のハッシュを含むヘッダーが追加されます。ヘッダーが存在する場合は、JAR ファイルの検証時に、まずヘッダー内のハッシュが、マニフェストファイル全体のハッシュと実際に一致するかどうかが確認されます。ハッシュが一致する場合、検証は次の手順に進みます。ハッシュが一致しない場合は、効率的には劣る方法を使って検証を行います。 具体的には、.SF ファイル内の各ソースファイル情報セクションのハッシュが、マニフェストファイル内の対応するセクションのハッシュと一致するかどうかを確認します。 
+.LP
+詳細は、「JAR ファイルの検証」を参照してください。 
+.LP
+\f3このオプションは、テストを行う場合には便利ですが、それ以外には使用しないでください。 このオプションを使用すると、有益な最適化が行われなくなります。\fP   
+.TP 3
+\-protected 
+\f2true\fP または \f2false\fP のいずれか。専用 PIN リーダーなどの保護された認証パスを介してパスワードを指定する必要がある場合には、この値に \f2true\fP を指定してください。 
+.RE
+.RS 3
+.TP 3
+\-provider provider\-class\-name 
+サービスプロバイダがセキュリティープロパティーファイル (\f2java.security\fP) のリストに入っていないときに、暗号化サービスプロバイダのマスタークラスファイルの名前を指定します。 
+.LP
+\f2\-providerArg\fP \f2ConfigFilePath\fP オプションと組み合わせて使用します。 keytool と jarsigner はプロバイダを動的にインストールします (ここで、\f2ConfigFilePath\fP はトークン設定ファイルへのパスです)。セキュリティープロパティーファイル内で Sun PKCS#11 プロバイダが設定されていない場合に PKCS#11 キーストアを一覧表示するコマンドの例を次に示します。 
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+jarsigner \-keystore NONE \-storetype PKCS11 \\ 
+.fl
+          \-providerClass sun.security.pkcs11.SunPKCS11 \\ 
+.fl
+          \-providerArg /foo/bar/token.config \\ 
+.fl
+          \-list
+.fl
+\fP
+.fi
+.RE
+.TP 3
+\-providerName providerName 
+\f2java.security\fP セキュリティープロパティーファイル内で 2 つ以上のプロバイダが設定されている場合、\f2\-providerName\fP オプションを使って特定のプロバイダインスタンスを選択できます。このオプションの引数は、プロバイダの名前です。 
+.LP
+Sun PKCS#11 プロバイダの場合、\f2providerName\fP は \f2SunPKCS11\-\fP\f2TokenName\fP という形式になります。 ここで「\f2TokenName\fP」は、プロバイダインスタンスが構成された名前の接尾辞です。 詳細は
+.na
+\f2構成属性の表\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html#ATTRSを参照してください。たとえば、以下のコマンドでは、名前接尾辞 \f2SmartCard\fP の PKCS#11 キーストアプロバイダインスタンスの内容をリストします。 
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+jarsigner \-keystore NONE \-storetype PKCS11 \\ 
+.fl
+        \-providerName SunPKCS11\-SmartCard \\ 
+.fl
+        \-list
+.fl
+\fP
+.fi
+.RE
+.TP 3
+\-Jjavaoption 
+指定された \f2javaoption\fP 文字列を Java インタプリタに直接渡します。(\f3jarsigner\fP は、実際には Java インタプリタに対する「ラッパー」です。このオプションには、空白を含めることはできません。このオプションは、実行環境またはメモリー使用を調整する場合に便利です。指定できるインタプリタオプションを一覧表示するには、コマンド行で \f2java \-h\fP または \f2java \-X\fP と入力してください。 
+.LP
+.TP 3
+\-tsa url 
+JAR ファイルの署名時にコマンド行に「\f2\-tsa http://example.tsa.url\fP」が表示される場合、署名のタイムスタンプが生成されます。URL \f2http://example.tsa.url\fP は、TSA (Time Stamping Authority) の場所を特定します。これは、\f2\-tsacert\fP オプションで検出された URL をオーバーライドします。\f2\-tsa\fP オプションでは、TSA の公開鍵証明書をキーストアに配置する必要はありません。 
+.LP
+タイムスタンプを生成するため、\f2jarsigner\fP は 
+.na
+\f2RFC 3161\fP @
+.fi
+http://www.ietf.org/rfc/rfc3161.txt で定義されている TSP (Time\-Stamp Protocol) を使用して TSA と通信します。成功すると、TSA から返されたタイムスタンプトークンは署名ブロックファイルの署名とともに保存されます。 
+.LP
+.TP 3
+\-tsacert alias 
+JAR ファイルの署名時にコマンド行に「\f2\-tsacert alias\fP」が表示される場合、署名のタイムスタンプが生成されます。\f2alias\fP は、キーストア内の現在有効な TSA の公開鍵証明書を特定します。エントリの証明書で、TSA の場所を特定する URL を含む Subject Information Access 拡張機能が確認されます。 
+.LP
+TSA の公開鍵証明書は、\f2\-tsacert\fP を使った場合、キーストアに配置されている必要があります。 
+.LP
+.TP 3
+\-altsigner class 
+代替署名機構を使用することを指定します。完全修飾クラス名は、\f2com.sun.jarsigner.ContentSigner\fP の abstract クラスを拡張するクラスファイルを特定します。このクラスファイルへのパスは、\f2\-altsignerpath\fP オプションによって定義されます。\f2\-altsigner\fP オプションを使用した場合、\f2jarsigner\fP は指定されたクラスが提供する署名機構を使用します。または、\f2jarsigner\fP はデフォルトの署名機構を使用します。 
+.LP
+たとえば、\f2com.sun.sun.jarsigner.AuthSigner\fP というクラスが提供する署名機構を使用するには、\f2jarsigner\fP オプション「\f2\-altsigner com.sun.jarsigner.AuthSigner\fP」を使用します。 
+.LP
+.TP 3
+\-altsignerpath classpathlist 
+クラスファイル (クラスファイル名は上記のように \f2\-altsigner\fP オプションで指定される) およびそれが依存する JAR ファイルへのパスを指定します。クラスファイルが JAR ファイル内にある場合、以下の例のように JAR ファイルへのパスが指定されます。 
+.LP
+絶対パスまたは現在のディレクトリからの相対パスを指定できます。\f2classpathlist\fP には、複数のパスまたは JAR ファイルを含めることができます。 その場合、各パスまたは JAR ファイルを、Solaris の場合にはコロン (\f2:\fP)、Windows の場合にはセミコロン (\f2;\fP) で区切ります。目的のクラスがすでに検索パス内にある場合は、このオプションは不要です。 
+.LP
+クラスファイルを含む、JAR ファイルへのパスを指定する例を示します。 
+.RS 3
+
+.LP
+.LP
+\f2\-altsignerpath /home/user/lib/authsigner.jar\fP
+.LP
+.RE
+.LP
+JAR ファイル名が含まれていることに注意してください。 
+.LP
+クラスファイルを含む JAR ファイルへのパスを指定する例を示します。 
+.RS 3
+.LP
+\f2\-altsignerpath /home/user/classes/com/sun/tools/jarsigner/\fP
+.LP
+.RE
+.LP
+JAR ファイル名は含まれていないことに留意してください。  
+.RE
+.SH "例"
+.LP
+
+.LP
+.SS 
+JAR ファイルの署名
+.LP
+.RS 3
+
+.LP
+.LP
+bundle.jar という名前の JAR ファイルがあるとします。 このファイルに、キーストアの別名が jane であるユーザーの非公開鍵を使って、署名を付けるとします。キーストアは、mystore という名前で、C ドライブの working ディレクトリにあり、キーストアのパスワードは mypass、\f2jane\fP の非公開鍵のパスワードは j638klm とします。この場合、次のコマンドを実行すると、JAR ファイルに署名を付けて sbundle.jar という署名付き JAR ファイルを作成できます。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-keystore /working/mystore \-storepass myspass
+.fl
+      \-keypass j638klm \-signedjar sbundle.jar bundle.jar jane 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+上のコマンドでは \f2\-sigfile\fP オプションが指定されていないため、署名付き JAR ファイルに格納される .SF ファイルと .DSA ファイルの名前は、別名からデフォルト名がつけられます。つまり、\f2JANE.SF\fP と \f2JANE.DSA\fP になります。
+.LP
+.LP
+ストアのパスワードと非公開鍵のパスワードをあとで入力する場合は、上のコマンドを短縮して次のように入力できます。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-keystore /working/mystore
+.fl
+      \-signedjar sbundle.jar bundle.jar jane 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+デフォルトのキーストア (ホームディレクトリ内の .keystore という名前のキーストア) を使用する場合は、次に示すように、キーストアの指定を省略できます。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-signedjar sbundle.jar bundle.jar jane 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+また、署名付き JAR ファイルで入力 JAR ファイル (\f2bundle.jar\fP) を上書きする場合は、\f2\-signedjar\fP オプションの指定も省略できます。
+.LP
+.nf
+\f3
+.fl
+    jarsigner bundle.jar jane 
+.fl
+\fP
+.fi
+.RE
+
+.LP
+.SS 
+署名付き JAR ファイルの検証
+.LP
+.RS 3
+
+.LP
+.LP
+次に示すのは、署名付き JAR ファイルを検証し、署名が有効で JAR ファイルが改変されていないことを確認するためのコマンド例です。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-verify sbundle.jar 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+検証が成功すると、次のようなメッセージが表示されます。
+.LP
+.nf
+\f3
+.fl
+    jar が検証されました。
+.fl
+\fP
+.fi
+
+.LP
+.LP
+というメッセージが表示されます。検証が成功しなかった場合は、エラーメッセージが表示されます。
+.LP
+.LP
+\f2\-verbose\fP オプションを使うと、より多くの情報が表示されます。次に示すのは、\f2\-verbose\fP オプションを指定した \f3jarsigner\fP の実行例とその出力結果です。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-verify \-verbose sbundle.jar
+.fl
+
+.fl
+           198 Fri Sep 26 16:14:06 PDT 1997 META\-INF/MANIFEST.MF
+.fl
+           199 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.SF
+.fl
+          1013 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.DSA
+.fl
+    smk   2752 Fri Sep 26 16:12:30 PDT 1997 AclEx.class
+.fl
+    smk    849 Fri Sep 26 16:12:46 PDT 1997 test.class
+.fl
+
+.fl
+      s = 署名が検証されました。
+.fl
+      m = エントリがマニフェスト内にリストされます。
+.fl
+      k = 1 つ以上の証明書がキーストアで検出されました。
+.fl
+
+.fl
+    jar が検証されました。
+.fl
+\fP
+.fi
+
+.LP
+.SS 
+証明書情報を使った検証
+.LP
+.LP
+検証時に、\f2\-verify\fP と \f2\-verbose\fP オプションに加えて \f2\-certs\fP オプションを指定した場合は、JAR ファイル内の各署名者の証明書情報も出力されます。 これには、証明書のタイプ、署名者の識別名情報 (X.509 証明書の場合)、および JAR ファイルの公開鍵の証明書がキーストアエントリの公開鍵の証明書と一致する場合には、括弧で囲まれた署名者のキーストア別名が含まれます。次に例を示します。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-keystore /working/mystore \-verify \-verbose \-certs myTest.jar
+.fl
+
+.fl
+           198 Fri Sep 26 16:14:06 PDT 1997 META\-INF/MANIFEST.MF
+.fl
+           199 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.SF
+.fl
+          1013 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.DSA
+.fl
+           208 Fri Sep 26 16:23:30 PDT 1997 META\-INF/JAVATEST.SF
+.fl
+          1087 Fri Sep 26 16:23:30 PDT 1997 META\-INF/JAVATEST.DSA
+.fl
+    smk   2752 Fri Sep 26 16:12:30 PDT 1997 Tst.class
+.fl
+
+.fl
+      X.509, CN=Test Group, OU=Java Software, O=Sun Microsystems, L=CUP, S=CA, C=US (javatest)
+.fl
+      X.509, CN=Jane Smith, OU=Java Software, O=Sun, L=cup, S=ca, C=us (jane)
+.fl
+
+.fl
+      s = 署名が検証されました。
+.fl
+      m = エントリがマニフェスト内にリストされます。
+.fl
+      k = 1 つ以上の証明書がキーストアで検出されました。
+.fl
+
+.fl
+    jar が検証されました。 
+.fl
+\fP
+.fi
+
+.LP
+.LP
+署名者の証明書が X.509 証明書でない場合は、識別名情報は表示されません。その場合には、証明書のタイプと別名だけが表示されます。たとえば、証明書が PGP 証明書で、別名が bob の場合は、次のように表示されます。
+.LP
+.nf
+\f3
+.fl
+      PGP, (bob)
+.fl
+\fP
+.fi
+
+.LP
+.SS 
+アイデンティティーデータベースの署名者を含む JAR ファイルの検証
+.LP
+.LP
+JAR ファイルが、JDK 1.1 の \f3javakey\fP ツールを使って署名されている場合、署名者はアイデンティティーデータベース内の別名です。 この場合、検証の出力には i という記号が含まれます。JAR ファイルが、アイデンティティーデータベース内の別名とキーストア内の別名の両方によって署名されている場合は、k と i の両方が表示されます。
+.LP
+.LP
+\f2\-certs\fP オプションを指定した場合、キーストアの別名は括弧で囲まれるのに対し、アイデンティティーデータベース内の別名は角括弧で囲まれて表示されます。例を示します。
+.LP
+.nf
+\f3
+.fl
+    jarsigner \-keystore /working/mystore \-verify \-verbose \-certs writeFile.jar
+.fl
+
+.fl
+           198 Fri Sep 26 16:14:06 PDT 1997 META\-INF/MANIFEST.MF
+.fl
+           199 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.SF
+.fl
+          1013 Fri Sep 26 16:22:10 PDT 1997 META\-INF/JANE.DSA
+.fl
+           199 Fri Sep 27 12:22:30 PDT 1997 META\-INF/DUKE.SF
+.fl
+          1013 Fri Sep 27 12:22:30 PDT 1997 META\-INF/DUKE.DSA
+.fl
+   smki   2752 Fri Sep 26 16:12:30 PDT 1997 writeFile.html
+.fl
+
+.fl
+      X.509, CN=Jane Smith, OU=Java Software, O=Sun, L=cup, S=ca, C=us (jane)
+.fl
+      X.509, CN=Duke, OU=Java Software, O=Sun, L=cup, S=ca, C=us [duke]
+.fl
+
+.fl
+      s = 署名が検証されました。
+.fl
+      m = エントリがマニフェスト内にリストされます。
+.fl
+      k = 1 つ以上の証明書がキーストアで検出されました。
+.fl
+      i = 1 つ以上の証明書がアイデンティティースコープで検出されました。
+.fl
+
+.fl
+    jar が検証されました。
+.fl
+\fP
+.fi
+
+.LP
+.LP
+別名 duke は角括弧で囲まれているので、この別名はキーストアの別名ではなく、アイデンティティーデータベースの別名です。
+.LP
+.RE
+.SH "関連項目"
+.LP
+
+.LP
+.RS 3
+.TP 2
+o
+jar(1) ツールのドキュメント 
+.TP 2
+o
+keytool(1) ツールのドキュメント 
+.TP 2
+o
+\f3jarsigner\fP ツールの使用例については、
+.na
+\f4「Java Tutorial」\fP @
+.fi
+http://java.sun.com/docs/books/tutorial/index.htmlの
+.na
+\f4「Security」\fP @
+.fi
+http://java.sun.com/docs/books/tutorial/security/index.htmlを参照 
+.RE
+
+.LP
+
+.LP
+ 
