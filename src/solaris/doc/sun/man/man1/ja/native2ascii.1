@@ -1,0 +1,83 @@
+." Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+." DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+."
+." This code is free software; you can redistribute it and/or modify it
+." under the terms of the GNU General Public License version 2 only, as
+." published by the Free Software Foundation.
+."
+." This code is distributed in the hope that it will be useful, but WITHOUT
+." ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+." FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+." version 2 for more details (a copy is included in the LICENSE file that
+." accompanied this code).
+."
+." You should have received a copy of the GNU General Public License version
+." 2 along with this work; if not, write to the Free Software Foundation,
+." Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+."
+." Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+." CA 95054 USA or visit www.sun.com if you need additional information or
+." have any questions.
+."
+.TH native2ascii 1 "04 May 2009"
+." Generated from HTML by html2man (author: Eric Armstrong)
+
+.LP
+.SH "名前"
+native2ascii \- ネイティブ \- ASCII コンバータ
+.LP
+.RS 3
+
+.LP
+.LP
+ネイティブコード (Latin 1 および Unicode 以外) のファイルを Unicode コードに変換します。
+.LP
+.RE
+.SH "形式"
+.LP
+
+.LP
+.nf
+\f3
+.fl
+\fP\f4native2ascii\fP\f2 [options] [inputfile [outputfile]]\fP
+.fl
+.fi
+
+.LP
+.SH "説明"
+.LP
+
+.LP
+.LP
+Java コンパイラおよびその他の Java ツールは、Latin\-1 または Unicode コード (\\udddd 表記) 文字を含んだファイルだけを処理することができます。 \f2native2ascii\fP は、これら以外の文字コードのファイルを Latin\-1 または Unicode コードのファイルに変換します。
+.LP
+.LP
+\f2outputfile\fP を省略した場合、標準出力に出力されます。さらに、\f2inputfile\fP を省略した場合、標準入力から入力されます。
+.LP
+.SH "オプション"
+.LP
+
+.LP
+.RS 3
+.TP 3
+\-reverse 
+逆の処理を行います。つまり、Latin\-1 または Unicode コードのファイルをネイティブコードに変換します。
+.br
+.br
+.TP 3
+\-encoding encoding_name 
+変換処理で使用するコードの名前を指定します。デフォルトのコードは、システムプロパティーの \f2file.encoding\fP から取得されます。\f2encoding_name\fP 文字列は、
+.na
+\f4「サポートされているエンコーディング」\fP @
+.fi
+http://java.sun.com/javase/6/docs/technotes/guides/intl/encoding.doc.htmlドキュメントに示されている、サポートされるエンコーディングの表の最初の列から取得される必要があります。 
+.TP 3
+\-Joption 
+Java 仮想マシンに \f2option\fP を渡します。 \f2option\fP には、java(1)のリファレンスページに記載されているオプションを 1 つ指定します。たとえば、\f3\-J\-Xms48m\fP と指定すると、スタートアップメモリーは 48M バイトに設定されます。 
+.RE
+
+.LP
+
+.LP
+ 
