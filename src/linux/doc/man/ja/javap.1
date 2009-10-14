@@ -1,0 +1,364 @@
+." Copyright 2002-2006 Sun Microsystems, Inc.  All Rights Reserved.
+." DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+."
+." This code is free software; you can redistribute it and/or modify it
+." under the terms of the GNU General Public License version 2 only, as
+." published by the Free Software Foundation.
+."
+." This code is distributed in the hope that it will be useful, but WITHOUT
+." ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+." FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+." version 2 for more details (a copy is included in the LICENSE file that
+." accompanied this code).
+."
+." You should have received a copy of the GNU General Public License version
+." 2 along with this work; if not, write to the Free Software Foundation,
+." Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+."
+." Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+." CA 95054 USA or visit www.sun.com if you need additional information or
+." have any questions.
+."
+.TH javap 1 "04 May 2009"
+." Generated from HTML by html2man (author: Eric Armstrong)
+
+.LP
+.SH "名前"
+javap \- Java クラスファイル逆アセンブラ
+.LP
+.RS 3
+
+.LP
+.LP
+クラスファイルを逆アセンブルします。
+.LP
+.RE
+.SH "形式"
+.LP
+
+.LP
+.nf
+\f3
+.fl
+javap [ \fP\f3options\fP\f3 ] class. . .
+.fl
+\fP
+.fi
+
+.LP
+.SH "説明"
+.LP
+
+.LP
+.LP
+\f3javap\fP コマンドは、クラスファイルを逆アセンブルします。その出力は指定するオプションにより異なります。オプションを指定しない場合、\f3javap\fP は、そのパッケージ、渡されたクラスの protected および public のフィールドとメソッドを出力します。 \f3javap\fP はその出力を標準出力に表示します。たとえば、次のクラス宣言をコンパイルするとします。
+.LP
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+import java.awt.*;
+.fl
+import java.applet.*;
+.fl
+
+.fl
+public class DocFooter extends Applet {
+.fl
+        String date;
+.fl
+        String email;
+.fl
+
+.fl
+        public void init() {
+.fl
+                resize(500,100);
+.fl
+                date = getParameter("LAST_UPDATED");
+.fl
+                email = getParameter("EMAIL");
+.fl
+        }
+.fl
+
+.fl
+        public void paint(Graphics g) {
+.fl
+                g.drawString(date + " by ",100, 15);
+.fl
+                g.drawString(email,290,15);
+.fl
+        }
+.fl
+}
+.fl
+\fP
+.fi
+.RE
+
+.LP
+.LP
+\f3javap DocFooter\fP がもたらす出力は次のようになります。
+.LP
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+Compiled from DocFooter.java
+.fl
+public class DocFooter extends java.applet.Applet {
+.fl
+    java.lang.String date;
+.fl
+    java.lang.String email;
+.fl
+    public DocFooter();
+.fl
+    public void init();
+.fl
+    public void paint(java.awt.Graphics);
+.fl
+}
+.fl
+\fP
+.fi
+.RE
+
+.LP
+.LP
+\f3javap \-c DocFooter\fP がもたらす出力は次のようになります。
+.LP
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+Compiled from DocFooter.java
+.fl
+public class DocFooter extends java.applet.Applet {
+.fl
+    java.lang.String date;
+.fl
+    java.lang.String email;
+.fl
+    public DocFooter();
+.fl
+    public void init();
+.fl
+    public void paint(java.awt.Graphics);
+.fl
+}
+.fl
+
+.fl
+Method DocFooter()
+.fl
+   0 aload_0
+.fl
+   1 invokespecial #1 <Method java.applet.Applet()>
+.fl
+   4 return
+.fl
+
+.fl
+Method void init()
+.fl
+   0 aload_0
+.fl
+   1 sipush 500
+.fl
+   4 bipush 100
+.fl
+   6 invokevirtual #2 <Method void resize(int, int)>
+.fl
+   9 aload_0
+.fl
+  10 aload_0
+.fl
+  11 ldc #3 <String "LAST_UPDATED">
+.fl
+  13 invokevirtual #4 <Method java.lang.String getParameter(java.lang.String)>
+.fl
+  16 putfield #5 <Field java.lang.String date>
+.fl
+  19 aload_0
+.fl
+  20 aload_0
+.fl
+  21 ldc #6 <String "EMAIL">
+.fl
+  23 invokevirtual #4 <Method java.lang.String getParameter(java.lang.String)>
+.fl
+  26 putfield #7 <Field java.lang.String email>
+.fl
+  29 return
+.fl
+
+.fl
+Method void paint(java.awt.Graphics)
+.fl
+   0 aload_1
+.fl
+   1 new #8 <Class java.lang.StringBuffer>
+.fl
+   4 dup
+.fl
+   5 invokespecial #9 <Method java.lang.StringBuffer()>
+.fl
+   8 aload_0
+.fl
+   9 getfield #5 <Field java.lang.String date>
+.fl
+  12 invokevirtual #10 <Method java.lang.StringBuffer append(java.lang.String)>
+.fl
+  15 ldc #11 <String " by ">
+.fl
+  17 invokevirtual #10 <Method java.lang.StringBuffer append(java.lang.String)>
+.fl
+  20 invokevirtual #12 <Method java.lang.String toString()>
+.fl
+  23 bipush 100
+.fl
+  25 bipush 15
+.fl
+  27 invokevirtual #13 <Method void drawString(java.lang.String, int, int)>
+.fl
+  30 aload_1
+.fl
+  31 aload_0
+.fl
+  32 getfield #7 <Field java.lang.String email>
+.fl
+  35 sipush 290
+.fl
+  38 bipush 15
+.fl
+  40 invokevirtual #13 <Method void drawString(java.lang.String, int, int)>
+.fl
+  43 return
+.fl
+\fP
+.fi
+.RE
+
+.LP
+.SH "オプション"
+.LP
+
+.LP
+.RS 3
+.TP 3
+\-help 
+\f3javap\fP のヘルプメッセージを出力します。 
+.TP 3
+\-l 
+行番号と局所変数テーブルを表示します。 
+.TP 3
+\-b 
+JDK 1.1 の \f3javap\fP との下位互換性を保証します。 
+.TP 3
+\-public 
+public クラスおよびメンバーだけを表示します。 
+.TP 3
+\-protected 
+protected および public のクラスとメンバーだけを表示します。 
+.TP 3
+\-package 
+package、protected、および public のクラスとメンバーだけを表示します。これはデフォルトの設定です。 
+.TP 3
+\-private 
+すべてのクラスとメンバーを表示します。 
+.TP 3
+\-Jflag 
+ランタイムシステムに直接 \f2flag\fP を渡します。使用例を次に示します。 
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+javap \-J\-version
+.fl
+javap \-J\-Djava.security.manager \-J\-Djava.security.policy=MyPolicy MyClassName
+.fl
+\fP
+.fi
+.RE
+.TP 3
+\-s 
+内部の型シグニチャーを出力します。 
+.TP 3
+\-c 
+クラスの各メソッドのために逆アセンブルされるコード、すなわち Java バイトコードから成る命令を表示します。これらは
+.na
+\f2「Java Virtual Machine Specification」\fP @
+.fi
+http://java.sun.com/docs/books/vmspec/にドキュメント化されています。 
+.TP 3
+\-verbose 
+メソッドのスタックサイズ、および \f2locals\fP と \f2args\fP の数を出力します。 
+.TP 3
+\-classpath path 
+\f3javap\fP がクラスを探すために使用するパスを指定します。デフォルトまたは CLASSPATH 環境変数設定を上書きします。ディレクトリはコロンで分割します。したがって、\f2path\fP の一般形式は次のようになります。 
+.nf
+\f3
+.fl
+   .:<your_path>
+.fl
+\fP
+.fi
+例を示します。 
+.nf
+\f3
+.fl
+.:/home/avh/classes:/usr/local/java/classes
+.fl
+\fP
+.fi
+.TP 3
+\-bootclasspath path 
+ブートストラップクラスをロードするパスを指定します。ブートストラップクラスは、デフォルトでは \f2jre/lib/rt.jar\fP および他のいくつかの JAR ファイル にある、コア Java 2 プラットフォームを実装するクラスです。 
+.TP 3
+\-extdirs dirs 
+インストールされた拡張機能を検索する場所をオーバーライドします。The default location for extensions is the value of \f2java.ext.dirs\fP. 
+.RE
+
+.LP
+.SH "環境変数"
+.LP
+
+.LP
+.RS 3
+.TP 3
+CLASSPATH 
+ユーザー定義クラスへのパスをシステムに指定します。ディレクトリはコロンで分割します。 次に例を示します。 
+.RS 3
+
+.LP
+.nf
+\f3
+.fl
+.:/home/avh/classes:/usr/local/java/classes
+.fl
+\fP
+.fi
+.RE
+.RE
+
+.LP
+.SH "関連項目"
+.LP
+
+.LP
+.LP
+javac(1)、 java(1)、jdb(1)、javah(1)、javadoc(1)
+.LP
+
+.LP
+ 
