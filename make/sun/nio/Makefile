@@ -44,14 +44,6 @@ include $(BUILDDIR)/common/Defs.gmk
 include FILES_java.gmk
 AUTO_FILES_JAVA_DIRS = sun/nio/cs/ext
 
-# Exclude a few sources on windows
-ifeq ($(PLATFORM), windows)
-  AUTO_JAVA_PRUNE = sun/nio/cs/ext/COMPOUND_TEXT.java         \
-                    sun/nio/cs/ext/COMPOUND_TEXT_Decoder.java \
-                    sun/nio/cs/ext/COMPOUND_TEXT_Encoder.java \
-                    sun/nio/cs/ext/CompoundTextSupport.java
-endif # PLATFORM
-
 # For Cygwin, command line arguments that are paths must be converted to
 # windows style paths. These paths cannot be used as targets, however, because 
 # the ":" in them  will interfere with GNU Make rules, generating "multiple
@@ -90,7 +82,9 @@ $(FILES_DAT): $(FILES_MAP)
 		$(FILES_MAP) $(FILES_DAT) sjis0213
 
 
-$(FILES_genout_extcs): $(GENCSDATASRC)/SingleByte-X.java  $(GENCSDATASRC)/DoubleByte-X.java \
+$(FILES_genout_extcs): \
+                $(GENCSDATASRC)/SingleByte-X.java.template  \
+		$(GENCSDATASRC)/DoubleByte-X.java.template \
 		$(GENCSDATASRC)/extsbcs $(GENCSDATASRC)/dbcs
 	@$(prep-target)
 	$(RM) -r $(GENCSEXT)

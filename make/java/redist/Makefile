@@ -94,10 +94,12 @@ ifeq ($(INCLUDE_SA), true)
   endif
 endif # INCLUDE_SA
 
-# Hotspot client is only available on 32-bit builds
+# Hotspot client is only available on 32-bit non-Zero builds
+ifneq ($(ZERO_BUILD), true)
 ifeq ($(ARCH_DATA_MODEL), 32)
   IMPORT_LIST += $(LIB_LOCATION)/$(CLIENT_LOCATION)/$(JVM_NAME) \
                  $(LIB_LOCATION)/$(CLIENT_LOCATION)/Xusage.txt
+endif
 endif
 
 ifeq ($(PLATFORM), windows)
@@ -171,6 +173,7 @@ ifeq ($(PLATFORM), solaris)
   IMPORT_LIST += $(LIB_LOCATION)/$(SERVER_LOCATION)/$(JVMDB_NAME)
 endif 
 
+ifneq ($(ZERO_BUILD), true)
 ifeq ($(ARCH_DATA_MODEL), 32)
 
 IMPORT_LIST += $(LIB_LOCATION)/$(CLIENT_LOCATION)/$(LIBJSIG_NAME)
@@ -191,15 +194,15 @@ endif
 # For backwards compatability, make a link of the 32-bit client JVM to $(LIBDIR)
 IMPORT_LIST += $(LIB_LOCATION)/$(JVM_NAME)
 
-# create a link from lib/libjvm.so to client/libjvm.so
 $(LIB_LOCATION)/$(JVM_NAME): $(LIB_LOCATION)/$(CLIENT_LOCATION)/$(JVM_NAME)
 	@$(prep-target)
-	$(LN) -s $(CLIENT_LOCATION)/$(JVM_NAME) $@
 
 #  solaris   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ solaris
 endif # 32bit solaris
 
 endif # 32bit
+
+endif # ZERO_BUILD
 
 #  NOT Windows ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ NOT Windows
 
@@ -211,7 +214,7 @@ $(LIB_LOCATION)/$(CLIENT_LOCATION)/$(JVM_NAME): $(HOTSPOT_CLIENT_PATH)/$(JVM_NAM
 $(LIB_LOCATION)/$(KERNEL_LOCATION)/$(JVM_NAME): $(HOTSPOT_KERNEL_PATH)/$(JVM_NAME)
 	$(install-file)
 
-$(LIB_LOCATION)/$(LIBJSIG_NAME): $(HOTSPOT_SERVER_PATH)/$(LIBJSIG_NAME)
+$(LIB_LOCATION)/$(LIBJSIG_NAME): $(HOTSPOT_IMPORT_PATH)/$(ARCH_VM_SUBDIR)/$(LIBJSIG_NAME)
 	$(install-import-file)
 
 $(LIB_LOCATION)/$(CLIENT_LOCATION)/$(LIBJSIG_NAME) \

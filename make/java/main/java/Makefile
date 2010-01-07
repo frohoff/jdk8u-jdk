@@ -57,12 +57,9 @@ endif
 #
 include $(BUILDDIR)/common/Program.gmk
 OTHER_CPPFLAGS += -DEXPAND_CLASSPATH_WILDCARDS
-OTHER_CPPFLAGS += -DLAUNCHER_NAME=\"$(LAUNCHER_NAME)\"
+OTHER_CPPFLAGS += -DLAUNCHER_NAME='"$(LAUNCHER_NAME)"'
 
 ifeq ($(PLATFORM), solaris)
 LDFLAGS += -R$(OPENWIN_LIB)
-endif
-
-ifeq ($(PLATFORM), solaris)
 LDFLAGS += -M mapfile-$(ARCH)
 endif

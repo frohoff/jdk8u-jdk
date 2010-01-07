@@ -48,10 +48,14 @@ ZIP_SRC = $(SHARE_SRC)/native/java/util/zip/zlib-$(ZLIB_VERSION)
 LAUNCHER_SHARE_SRC = $(SHARE_SRC)/bin
 LAUNCHER_PLATFORM_SRC = $(PLATFORM_SRC)/bin
 
+ifeq ($(ZERO_BUILD), true)
+ERGO_FAMILY=zero
+else
 ifeq ($(ARCH_FAMILY), amd64)
 ERGO_FAMILY=i586
 else
 ERGO_FAMILY=$(ARCH_FAMILY)
+endif
 endif
 
 
@@ -92,6 +96,7 @@ OTHER_CPPFLAGS += $(LIBARCH_DEFINES)
 
 
 ifneq ($(PLATFORM), windows)	# UNIX systems
+        LD_RUNPATH_EXTRAS += ..
 	LIB_LOCATION = $(LIBDIR)/$(LIBARCH)/jli
 	# Note: its important to keep this order meaning -lc is the
 	# last library otherwise it could cause compatibility issues
