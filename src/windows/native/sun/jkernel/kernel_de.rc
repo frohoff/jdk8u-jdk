@@ -1,0 +1,122 @@
+/*
+ * Copyright (c) 2008, 2009, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DOWNLOAD_DIALOG DIALOGEX 0, 0, 340, 120
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Zusätzliche Komponenten erforderlich"
+EXSTYLE WS_EX_APPWINDOW
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "", IDC_DOWNLOAD_MASTHEAD, 0, 0, 340, 39
+    LTEXT           "", IDC_MASTHEAD_TEXT, 60, 14, 200, 12
+    CONTROL         "", IDC_STATIC,"Static", SS_BLACKFRAME | SS_SUNKEN,
+                    0, 39, 340, 1
+    LTEXT           "", IDC_DOWNLOAD_TEXT, 12, 60, 316, 20
+    LTEXT           "", IDC_TIME_REMAINING, 12, 90, 316, 10
+    CONTROL         "Progress1",1006,"msctls_progress32",PBS_SMOOTH,
+                    12, 100, 265, 14
+    PUSHBUTTON	    "Abbrechen",  2, 285, 100, 46, 14
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    105, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 236
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 63
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_DOWNLOAD_CANCEL_MESSAGE   "Wenn Sie die Installation zusätzlicher Komponenten, die für die Anwendung erforderlich sind, abbrechen, wird die Anwendung möglicherweise beendet.\n\nMöchten Sie die Installation zusätzlicher Komponenten wirklich abbrechen?"
+    IDS_DOWNLOAD_CANCEL_CAPTION   "Abbrechen - Zusätzliche Komponenten"
+    IDS_DOWNLOAD_CANCEL_INSTRUCTION   ""
+    IDS_HTTP_INSTRUCTION_REQUEST_TIMEOUT      "Verbindungstimeout"
+    IDS_HTTP_INSTRUCTION_SERVER_NOT_REACHABLE "Internetverbindung kann nicht hergestellt werden"
+    IDS_HTTP_INSTRUCTION_UNKNOWN_ERROR        "Serverfehler (Fehler %s)"
+    IDS_HTTP_INSTRUCTION_SERVICE_UNAVAIL      "Service nicht verfügbar (Fehler %s)"
+    IDS_HTTP_INSTRUCTION_FORBIDDEN            "Zugriff abgelehnt oder untersagt (Fehler %s)"
+    IDS_HTTP_STATUS_OTHER                     "Während dieser Anforderung ist ein Fehler aufgetreten. Möchten Sie die Anforderung wiederholen?"
+
+// HTTP status code
+    IDS_HTTP_STATUS_REQUEST_TIMEOUT "Der für das Herunterladen der angeforderten Komponenten verwendete Server antwortet nicht. Es ist ein Timeout aufgetreten. Möchten Sie erneut versuchen, eine Verbindung herzustellen?"
+    IDS_HTTP_STATUS_FORBIDDEN		"Sie haben keine Zugriffsberechtigung für den Server, um die von der Anwendung angeforderten Komponenten herunterzuladen. Möchten Sie erneut versuchen, auf den Server zuzugreifen?"
+    IDS_HTTP_STATUS_SERVER_ERROR	"Auf dem Server ist ein Fehler aufgetreten, und die Anforderung konnte nicht abgeschlossen werden. Möchten Sie die Anforderung wiederholen?"
+    IDS_HTTP_STATUS_SERVICE_UNAVAIL	"Der angeforderte Service ist vorübergehend nicht verfügbar. Möchten Sie die Anforderung wiederholen?"
+
+
+    IDS_DOWNLOAD_STATUS_RETRY		"Server ist derzeit ausgelastet. Wiederholung in %ld Sekunden ..."
+  
+    IDS_ERROR_CAPTION               "Java-Installationsprogramm"
+    IDS_HOURSMINUTESECOND	    "Verbleibende Zeit (geschätzt): %d Stunden, %d Minuten %.0f Sekunden"
+    IDS_HOURMINUTESECOND	    "Verbleibende Zeit (geschätzt): %d Stunde, %d Minuten %.0f Sekunden"
+    IDS_MINUTESECOND 		    "Verbleibende Zeit (geschätzt): %d Minuten %.0f Sekunden"
+    IDS_SECOND                      "Verbleibende Zeit (geschätzt): %.0f Sekunden"
+    IDS_DISK_FULL_ERROR_CAPTION     "Datenträger belegt %s"
+    IDS_DISK_FULL_ERROR             "Die erforderlichen Komponenten konnten nicht herunterladen werden, da der Datenträger voll ist. Schaffen Sie Speicherplatz auf dem Datenträger, und wiederholen Sie den Vorgang."
+    IDS_DISK_WRITE_ERROR_CAPTION    "Schreiben auf Datenträger %s nicht möglich"
+    IDS_DISK_WRITE_ERROR            "Beim Schreiben auf den Datenträger ist ein Fehler aufgetreten. Stellen Sie sicher, dass der Datenträger nicht schreibgeschützt ist."
+    IDS_HTTP_STATUS_SERVER_NOT_REACHABLE "Java kann keine Internetverbindung herstellen. Stellen Sie sicher, dass die Internetverbindungseinstellungen richtig sind (in der Windows-Systemsteuerung unter Internetoptionen > Verbindung) und dass die Firewall zulässt, dass java.exe auf das Internet zugreift."
+
+    IDS_DOWNLOAD_RETRY             "Downloadfehler"
+    IDS_DOWNLOAD_RETRY_TEXT        "Beim Herunterladen einiger benötigter Komponenten ist ein Fehler aufgetreten. Möchten Sie noch einmal versuchen, diese Komponenten herunterzuladen?"
+
+    IDS_DOWNLOAD                   "Zusätzliche Komponenten werden installiert"
+    IDS_DOWNLOAD_UNPACKING         "Bundle wird entpackt"
+    IDS_DOWNLOAD_TEXT              "Die Java-Anwendung wird gestartet, wenn die zusätzlichen Komponenten, die erforderlich sind, heruntergeladen und installiert wurden."
+    
+    IDS_FILE_UPDATE_ERROR          "Beim Aktualisieren von %s%s ist ein Fehler aufgetreten."
+    IDS_FILE_DELETE_ERROR          "Beim Entfernen von %s ist ein Fehler aufgetreten."
+    IDS_JAVA_HOME_ERROR            "Java-Standardverzeichnis kann nicht bestimmt werden."
+    IDS_KERNEL_HOME_ERROR          "Pfad zu jkernel.dll kann nicht bestimmt werden."
+    IDS_JBROKER_ERROR              "jbroker.exe kann nicht gestartet werden."
+    IDS_FATAL_ERROR                "Java konnte einige erforderliche Komponenten nicht herunterladen. Programm wird beendet."
+    IDS_ERROR_DOWNLOADING_BUNDLE_PROPERTIES "Java konnte nicht mit dem Downloadserver kommunizieren. Programm wird beendet."
+    IDS_ERROR_MALFORMED_BUNDLE_PROPERTIES "Bei der Kommunikation mit dem Downloadserver ist ein Fehler aufgetreten. Programm wird beendet."
+    IDS_ERROR_MALFORMED_URL "Download von URL ""%s"" nicht möglich. Programm wird beendet."
+END
