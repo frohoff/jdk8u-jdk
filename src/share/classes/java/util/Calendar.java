@@ -57,6 +57,8 @@ import java.util.concurrent.ConcurrentMap;
 import sun.util.BuddhistCalendar;
 import sun.util.calendar.ZoneInfo;
 import sun.util.locale.provider.CalendarDataUtility;
+import sun.util.locale.provider.LocaleProviderAdapter;
+import sun.util.spi.CalendarProvider;
 
 /**
  * The <code>Calendar</code> class is an abstract class that provides methods
@@ -1572,7 +1574,8 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
 
     /**
      * Constructs a Calendar with the default time zone
-     * and locale.
+     * and the default {@link java.util.Locale.Category#FORMAT FORMAT}
+     * locale.
      * @see     TimeZone#getDefault
      */
     protected Calendar()
@@ -1600,21 +1603,21 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
     /**
      * Gets a calendar using the default time zone and locale. The
      * <code>Calendar</code> returned is based on the current time
-     * in the default time zone with the default locale.
+     * in the default time zone with the default
+     * {@link Locale.Category#FORMAT FORMAT} locale.
      *
      * @return a Calendar.
      */
     public static Calendar getInstance()
     {
-        Calendar cal = createCalendar(TimeZone.getDefaultRef(), Locale.getDefault(Locale.Category.FORMAT));
-        cal.sharedZone = true;
-        return cal;
+        return createCalendar(TimeZone.getDefault(), Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
      * Gets a calendar using the specified time zone and default locale.
      * The <code>Calendar</code> returned is based on the current time
-     * in the given time zone with the default locale.
+     * in the given time zone with the default
+     * {@link Locale.Category#FORMAT FORMAT} locale.
      *
      * @param zone the time zone to use
      * @return a Calendar.
@@ -1634,9 +1637,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     public static Calendar getInstance(Locale aLocale)
     {
-        Calendar cal = createCalendar(TimeZone.getDefaultRef(), aLocale);
-        cal.sharedZone = true;
-        return cal;
+        return createCalendar(TimeZone.getDefault(), aLocale);
     }
 
     /**
@@ -1657,6 +1658,17 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
     private static Calendar createCalendar(TimeZone zone,
                                            Locale aLocale)
     {
+        CalendarProvider provider =
+            LocaleProviderAdapter.getAdapter(CalendarProvider.class, aLocale)
+                                 .getCalendarProvider();
+        if (provider != null) {
+            try {
+                return provider.getInstance(zone, aLocale);
+            } catch (IllegalArgumentException iae) {
+                // fall back to the default instantiation
+            }
+        }
+
         Calendar cal = null;
 
         if (aLocale.hasExtensions()) {

@@ -35,6 +35,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.UnsupportedProfileException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -63,12 +64,22 @@ public class URLClassPath {
     final static String USER_AGENT_JAVA_VERSION = "UA-Java-Version";
     final static String JAVA_VERSION;
     private static final boolean DEBUG;
+    private static final boolean DISABLE_JAR_CHECKING;
+
+    /**
+     * Used by launcher to indicate that checking of the JAR file "Profile"
+     * attribute has been suppressed.
+     */
+    private static boolean profileCheckSuppressedByLauncher;
 
     static {
         JAVA_VERSION = java.security.AccessController.doPrivileged(
             new sun.security.action.GetPropertyAction("java.version"));
         DEBUG        = (java.security.AccessController.doPrivileged(
             new sun.security.action.GetPropertyAction("sun.misc.URLClassPath.debug")) != null);
+        String p = java.security.AccessController.doPrivileged(
+            new sun.security.action.GetPropertyAction("sun.misc.URLClassPath.disableJarChecking"));
+        DISABLE_JAR_CHECKING = p != null ? p.equals("true") || p.equals("") : false;
     }
 
     /* The original search path of URLs. */
@@ -537,7 +548,7 @@ public class URLClassPath {
                      * in a hurry.
                      */
                     JarURLConnection juc = (JarURLConnection)uc;
-                    jarfile = juc.getJarFile();
+                    jarfile = JarLoader.checkJar(juc.getJarFile());
                 }
             } catch (Exception e) {
                 return null;
@@ -582,6 +593,15 @@ public class URLClassPath {
         }
     }
 
+    /**
+     * Used by the launcher to suppress further checking of the JAR file Profile
+     * attribute (necessary when the launcher is aborting as the abort involves
+     * a resource lookup that may involve opening additional JAR files)
+     */
+    public static void suppressProfileCheckForLauncher() {
+        profileCheckSuppressedByLauncher = true;
+    }
+
     /*
      * Inner class used to represent a Loader of resources from a JAR URL.
      */
@@ -593,6 +613,8 @@ public class URLClassPath {
         private URLStreamHandler handler;
         private HashMap<String, Loader> lmap;
         private boolean closed = false;
+        private static final sun.misc.JavaUtilZipFileAccess zipAccess =
+                sun.misc.SharedSecrets.getJavaUtilZipFileAccess();
 
         /*
          * Creates a new JarLoader for the specified URL referring to
@@ -697,6 +719,14 @@ public class URLClassPath {
             }
         }
 
+        /* Throws if the given jar file is does not start with the correct LOC */
+        static JarFile checkJar(JarFile jar) throws IOException {
+            if (System.getSecurityManager() != null && !DISABLE_JAR_CHECKING
+                && !zipAccess.startsWithLocHeader(jar))
+                throw new IOException("Invalid Jar file");
+            return jar;
+        }
+
         private JarFile getJarFile(URL url) throws IOException {
             // Optimize case where url refers to a local jar file
             if (isOptimizable(url)) {
@@ -704,11 +734,12 @@ public class URLClassPath {
                 if (!p.exists()) {
                     throw new FileNotFoundException(p.getPath());
                 }
-                return new JarFile (p.getPath());
+                return checkJar(new JarFile(p.getPath()));
             }
             URLConnection uc = getBaseURL().openConnection();
             uc.setRequestProperty(USER_AGENT_JAVA_VERSION, JAVA_VERSION);
-            return ((JarURLConnection)uc).getJarFile();
+            JarFile jarFile = ((JarURLConnection)uc).getJarFile();
+            return checkJar(jarFile);
         }
 
         /*
@@ -787,6 +818,25 @@ public class URLClassPath {
                 }
             }
             return false;
+        }
+
+        /**
+         * If the Profile attribute is present then this method checks that the runtime
+         * supports that profile.
+         */
+        void checkProfileAttribute() throws IOException {
+            Manifest man = jar.getManifest();
+            if (man != null) {
+                Attributes attr = man.getMainAttributes();
+                if (attr != null) {
+                    String value = attr.getValue(Name.PROFILE);
+                    if (value != null && !Version.supportsProfile(value)) {
+                        String prefix = Version.profileName().length() > 0 ?
+                            "This runtime implements " + Version.profileName() + ", " : "";
+                        throw new UnsupportedProfileException(prefix + csu + " requires " + value);
+                    }
+                }
+            }
         }
 
         /*
@@ -958,6 +1008,13 @@ public class URLClassPath {
 
             ensureOpen();
             parseExtensionsDependencies();
+
+            // check Profile attribute if present
+            if (!profileCheckSuppressedByLauncher &&
+                    SharedSecrets.javaUtilJarAccess().jarFileHasProfileAttribute(jar)) {
+                checkProfileAttribute();
+            }
+
             if (SharedSecrets.javaUtilJarAccess().jarFileHasClassPathAttribute(jar)) { // Only get manifest when necessary
                 Manifest man = jar.getManifest();
                 if (man != null) {

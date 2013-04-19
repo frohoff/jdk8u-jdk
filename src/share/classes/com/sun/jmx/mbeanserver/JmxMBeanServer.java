@@ -32,6 +32,7 @@ import static com.sun.jmx.defaults.JmxProperties.MBEANSERVER_LOGGER;
 import java.io.ObjectInputStream;
 import java.security.AccessController;
 import java.security.Permission;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +52,7 @@ import javax.management.MBeanPermission;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerDelegate;
+import javax.management.MBeanServerPermission;
 import javax.management.NotCompliantMBeanException;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -226,8 +228,16 @@ public final class JmxMBeanServer
                 clr = new ClassLoaderRepositorySupport();
             instantiator = new MBeanInstantiator(clr);
         }
+
+        final MBeanInstantiator fInstantiator = instantiator;
         this.secureClr = new
-          SecureClassLoaderRepository(instantiator.getClassLoaderRepository());
+            SecureClassLoaderRepository(AccessController.doPrivileged(new PrivilegedAction<ClassLoaderRepository>() {
+                @Override
+                public ClassLoaderRepository run() {
+                    return fInstantiator.getClassLoaderRepository();
+                }
+            })
+        );
         if (delegate == null)
             delegate = new MBeanServerDelegateImpl();
         if (outer == null)
@@ -1241,8 +1251,14 @@ public final class JmxMBeanServer
            class loader.  The ClassLoaderRepository knows how
            to handle that case.  */
         ClassLoader myLoader = outerShell.getClass().getClassLoader();
-        final ModifiableClassLoaderRepository loaders =
-            instantiator.getClassLoaderRepository();
+        final ModifiableClassLoaderRepository loaders = AccessController.doPrivileged(new PrivilegedAction<ModifiableClassLoaderRepository>() {
+
+            @Override
+            public ModifiableClassLoaderRepository run() {
+                return instantiator.getClassLoaderRepository();
+            }
+        });
+
         if (loaders != null) {
             loaders.addClassLoader(myLoader);
 
@@ -1409,6 +1425,8 @@ public final class JmxMBeanServer
         // Default is true.
         final boolean fairLock = DEFAULT_FAIR_LOCK_POLICY;
 
+        checkNewMBeanServerPermission();
+
         // This constructor happens to disregard the value of the interceptors
         // flag - that is, it always uses the default value - false.
         // This is admitedly a bug, but we chose not to fix it for now
@@ -1494,4 +1512,11 @@ public final class JmxMBeanServer
         }
     }
 
+    private static void checkNewMBeanServerPermission() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            Permission perm = new MBeanServerPermission("newMBeanServer");
+            sm.checkPermission(perm);
+        }
+    }
 }

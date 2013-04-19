@@ -30,6 +30,7 @@ import java.awt.Dialog.ModalityType;
 import java.awt.event.*;
 import java.awt.peer.WindowPeer;
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.swing.*;
@@ -218,11 +219,7 @@ public class CPlatformWindow extends CFRetainedResource implements PlatformWindo
      */
     @Override // PlatformWindow
     public void initialize(Window _target, LWWindowPeer _peer, PlatformWindow _owner) {
-        this.peer = _peer;
-        this.target = _target;
-        if (_owner instanceof CPlatformWindow) {
-            this.owner = (CPlatformWindow)_owner;
-        }
+        initializeBase(_target, _peer, _owner, new CPlatformView());
 
         final int styleBits = getInitialStyleBits();
 
@@ -244,6 +241,15 @@ public class CPlatformWindow extends CFRetainedResource implements PlatformWindo
         }
 
         validateSurface();
+    }
+
+    protected void initializeBase(Window target, LWWindowPeer peer, PlatformWindow owner, CPlatformView view) {
+        this.peer = peer;
+        this.target = target;
+        if (owner instanceof CPlatformWindow) {
+            this.owner = (CPlatformWindow)owner;
+        }
+        this.contentView = view;
     }
 
     protected CPlatformResponder createPlatformResponder() {
@@ -864,8 +870,32 @@ public class CPlatformWindow extends CFRetainedResource implements PlatformWindo
 
     private void flushBuffers() {
         if (isVisible() && !nativeBounds.isEmpty()) {
-            LWCToolkit.getLWCToolkit().flushPendingEventsOnAppkit(target);
+            try {
+                LWCToolkit.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Posting an empty to flush the EventQueue without blocking the main thread
+                    }
+                }, target);
+            } catch (InterruptedException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    /**
+     * Helper method to get a pointer to the native view from the PlatformWindow.
+     */
+    static long getNativeViewPtr(PlatformWindow platformWindow) {
+        long nativePeer = 0L;
+        if (platformWindow instanceof CPlatformWindow) {
+            nativePeer = ((CPlatformWindow) platformWindow).getContentView().getAWTView();
+        } else if (platformWindow instanceof CViewPlatformEmbeddedFrame){
+            nativePeer = ((CViewPlatformEmbeddedFrame) platformWindow).getNSViewPtr();
+        } else {
+            throw new IllegalArgumentException("Unsupported platformWindow implementation");
+        }
+        return nativePeer;
     }
 
     /*************************************************************

@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.lang.reflect.AnnotatedElement;
 import java.io.InputStream;
 import java.util.Enumeration;
 
@@ -48,6 +49,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import sun.net.www.ParseUtil;
+import sun.reflect.CallerSensitive;
+import sun.reflect.Reflection;
 
 import java.lang.annotation.Annotation;
 
@@ -272,8 +275,9 @@ public class Package implements java.lang.reflect.AnnotatedElement {
      * @return the package of the requested name. It may be null if no package
      *          information is available from the archive or codebase.
      */
+    @CallerSensitive
     public static Package getPackage(String name) {
-        ClassLoader l = ClassLoader.getCallerClassLoader();
+        ClassLoader l = ClassLoader.getClassLoader(Reflection.getCallerClass());
         if (l != null) {
             return l.getPackage(name);
         } else {
@@ -293,8 +297,9 @@ public class Package implements java.lang.reflect.AnnotatedElement {
      * @return a new array of packages known to the callers {@code ClassLoader}
      * instance.  An zero length array is returned if none are known.
      */
+    @CallerSensitive
     public static Package[] getPackages() {
-        ClassLoader l = ClassLoader.getCallerClassLoader();
+        ClassLoader l = ClassLoader.getClassLoader(Reflection.getCallerClass());
         if (l != null) {
             return l.getPackages();
         } else {
@@ -383,6 +388,16 @@ public class Package implements java.lang.reflect.AnnotatedElement {
      */
     public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
         return getPackageInfo().getAnnotation(annotationClass);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws NullPointerException {@inheritDoc}
+     * @since 1.5
+     */
+    @Override
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+        return AnnotatedElement.super.isAnnotationPresent(annotationClass);
     }
 
     /**

@@ -41,6 +41,8 @@ $(eval $(call FillCacheFind,\
 
 include Tools.gmk
 
+include Profiles.gmk
+
 # Note: This double-colon rule is intentional, to support
 # custom make file integration.
 images:: jre-image jdk-image
@@ -57,7 +59,7 @@ define process-doc-file
 	$(ECHO) $(LOG_INFO) Processing $(patsubst $(OUTPUT_ROOT)/%,%,$@)
 	$(MKDIR) -p $(@D)
 	$(RM) $@
-	$(SED) 's/$$//g' $< > $@
+	LC_ALL=C $(SED) 's/$$//g' $< > $@
 	$(CHMOD) 444 $@
 endef
 
@@ -84,7 +86,7 @@ endef
 ################################################################################
 #
 # Variable prefixes explained:
-# JRE_ refers to files in the j2re-image.
+# JRE_ refers to files in the j2re-*-image.
 # JDK_ refers to files in the j2sdk-image outside of the jre subdir.
 # JDKJRE_ refers to files in the j2sdk-image inside the jre subdir.
 #
@@ -92,7 +94,8 @@ endef
 ################################################################################
 # /bin dir
 
-NOT_JRE_BIN_FILES := \
+ifeq ($(PROFILE),)
+    NOT_JRE_BIN_FILES := \
 	appletviewer$(EXE_SUFFIX) \
 	extcheck$(EXE_SUFFIX) \
 	idlj$(EXE_SUFFIX) \
@@ -125,6 +128,7 @@ NOT_JRE_BIN_FILES := \
         schemagen$(EXE_SUFFIX) \
 	jsadebugd$(EXE_SUFFIX) \
 	jhat$(EXE_SUFFIX)
+endif
 
 WINDOWS_JDK_BIN_FILES = \
 	$(EXE_SUFFIX) \
@@ -196,7 +200,8 @@ ifneq ($(OPENJDK_TARGET_OS), macosx)
 	$(SALIB_NAME)
 endif
 
-NOT_JRE_LIB_FILES := \
+ifeq ($(PROFILE),)
+    NOT_JRE_LIB_FILES := \
 	tools.jar \
 	jconsole.jar \
 	sa-jdi.jar \
@@ -205,8 +210,9 @@ NOT_JRE_LIB_FILES := \
 	ir.idl \
 	ct.sym
 
-ifeq ($(OPENJDK_TARGET_OS), windows)
-    NOT_JRE_LIB_FILES += jawt.lib jvm.lib
+    ifeq ($(OPENJDK_TARGET_OS), windows)
+      NOT_JRE_LIB_FILES += jawt.lib jvm.lib
+    endif
 endif
 
 JDK_LIB_FILES := $(NOT_JRE_LIB_FILES)
@@ -257,6 +263,13 @@ $(foreach f,$(filter $(JDK_OUTPUTDIR)/lib$(OPENJDK_TARGET_CPU_ISADIR)/%,$(JDK_JD
     $(eval $(call AddFileToCopy,$(JDK_OUTPUTDIR),$(JDK_OVERLAY_IMAGE_DIR),$f,JDK_OVERLAY_LIB_TARGETS)))
 $(foreach f,$(filter $(JDK_OUTPUTDIR)/lib$(OPENJDK_TARGET_CPU_ISADIR)/%,$(JDKJRE_JDKOUT_LIB_LIST)),\
     $(eval $(call AddFileToCopy,$(JDK_OUTPUTDIR),$(JDK_OVERLAY_IMAGE_DIR)/jre,$f,JDKJRE_OVERLAY_LIB_TARGETS)))
+
+ifneq ($(PROFILE),)
+# Files in lib$(PROFILE) are excluded from the generic copying routines so 
+# we have to add them back in here
+$(foreach f,$(CUSTOM_PROFILE_JARS),\
+    $(eval $(call AddFileToCopy,$(IMAGES_OUTPUTDIR)/lib$(PROFILE),$(JRE_IMAGE_DIR)/lib,$f,JRE_LIB_TARGETS)))
+endif
 
 # CTE plugin security change require new empty directory lib/applet
 $(JRE_IMAGE_DIR)/lib/applet: 
@@ -596,6 +609,7 @@ define create-info-file
 	$(call info-file-item, "OS_NAME",      "$(REQUIRED_OS_NAME)")
 	$(call info-file-item, "OS_VERSION",   "$(REQUIRED_OS_VERSION)")
 	$(call info-file-item, "OS_ARCH",      "$(OPENJDK_TARGET_CPU_LEGACY)")
+	if [ -n "$(JDK_ARCH_ABI_PROP_NAME)" ]; then $(call info-file-item, "SUN_ARCH_ABI", "$(JDK_ARCH_ABI_PROP_NAME)"); fi
 	$(call info-file-item, "SOURCE",       "$(ALL_SOURCE_TIPS)")
 endef
 
@@ -607,6 +621,9 @@ ALL_SOURCE_TIPS = $(shell \
 $(JRE_INFO_FILE): $(OUTPUT_ROOT)/spec.gmk $(OUTPUT_ROOT)/source_tips
 	$(ECHO) $(LOG_INFO) Generating $(patsubst $(OUTPUT_ROOT)/%,%,$@)
 	$(call create-info-file)
+ifneq ($(PROFILE),)
+	$(call info-file-item, "JAVA_PROFILE", "$(call profile_name, $(call profile_number, $(PROFILE)))")
+endif
 
 $(JDK_INFO_FILE): $(OUTPUT_ROOT)/spec.gmk $(OUTPUT_ROOT)/source_tips
 	$(ECHO) $(LOG_INFO) Generating $(patsubst $(OUTPUT_ROOT)/%,%,$@)
@@ -632,7 +649,7 @@ ifneq ($(POST_STRIP_CMD),)
         EXEC_LIST_BIN:=$(filter-out %$(notdir $(MSVCR_DLL)),$(filter %.exe %.dll,$(ALL_BIN_LIST)))
     else
         # Find all executables in JDK_OUTPUTDIR since they exist when this makefile is parsed
-        EXEC_LIST_BIN:=$(shell $(FILE) `$(FIND) $(JDK_OUTPUTDIR)/bin -type f -name \*$(EXE_SUFFIX)` \
+        EXEC_LIST_BIN:=$(shell $(FILE) `$(FIND) $(JDK_OUTPUTDIR)/bin -type f -name \*$(EXE_SUFFIX) ! -name \*.debuginfo` \
 		| $(EGREP) 'ELF' | $(CUT) -d':' -f1)
         # On mac, the old build searches for static libraries for stripping instead of shared.
         # Not clear if it's intentional.
@@ -648,7 +665,7 @@ ifneq ($(POST_STRIP_CMD),)
     EXEC_LIST_OVERLAY:=$(filter $(OVERLAY_FILTER),$(EXEC_LIST_BIN)) $(EXEC_LIST_LIB)
 
     # Filter out non JRE files and convert to unique touch files to depend on
-    JRE_STRIP_LIST:=$(patsubst $(JDK_OUTPUTDIR)/%,$(IMAGES_OUTPUTDIR)/_strip_jre/%.stripped,\
+    JRE_STRIP_LIST:=$(patsubst $(JDK_OUTPUTDIR)/%,$(IMAGES_OUTPUTDIR)/_strip_jre$(PROFILE)/%.stripped,\
 			$(filter-out $(addprefix %,$(NOT_JRE_BIN_FILES) $(NOT_JRE_LIB_FILES) $(JDKJRE_LIB_FILES)),\
 				 $(EXEC_LIST)))
 
@@ -688,7 +705,7 @@ ifneq ($(POST_STRIP_CMD),)
     endef
 
     # Setup a rule for stripping files based on touch files
-    $(IMAGES_OUTPUTDIR)/_strip_jre/%.stripped: $(JRE_IMAGE_DIR)/%
+    $(IMAGES_OUTPUTDIR)/_strip_jre$(PROFILE)/%.stripped: $(JRE_IMAGE_DIR)/%
 	$(call strip-file)
 
     $(IMAGES_OUTPUTDIR)/_strip_jdk/%.stripped: $(JDK_IMAGE_DIR)/%
@@ -727,6 +744,24 @@ jdk-overlay-image: $(JDK_OVERLAY_BIN_TARGETS) $(JDKJRE_OVERLAY_BIN_TARGETS) \
 	$(JDK_OVERLAY_LIB_TARGETS) $(JDKJRE_OVERLAY_LIB_TARGETS) \
 	$(JDK_OVERLAY_DEMO_TARGETS) $(JDK_OVERLAY_INFO_FILE) \
 	$(JDKJRE_OVERLAY_STRIP_LIST) $(JDK_OVERLAY_BIN_STRIP_LIST) 
+
+ifneq ($(PROFILE),)
+PROFILE_IMAGE_JARS := $(filter %.jar, $(JRE_LIB_TARGETS))
+
+PROFILE_IMAGE_JARS_CHECKED := $(IMAGES_OUTPUTDIR)/lib$(PROFILE)/_jars_checked
+
+$(PROFILE_IMAGE_JARS_CHECKED) : $(PROFILE_IMAGE_JARS)
+	$(TOOL_CHECKDEPS) $(JRE_IMAGE_DIR) \
+	    $(call profile_name, $(call profile_number, $(PROFILE)))
+	$(TOUCH) $@
+
+profile-image: $(JRE_BIN_TARGETS) $(JRE_LIB_TARGETS) \
+	$(JRE_IMAGE_DIR)/lib/meta-index $(JRE_IMAGE_DIR)/lib/ext/meta-index \
+	$(JRE_INFO_FILE) $(JRE_STRIP_LIST) $(PROFILE_IMAGE_JARS_CHECKED)
+
+.PHONY: profile-image
+
+endif # Profile
 
 ################################################################################
 

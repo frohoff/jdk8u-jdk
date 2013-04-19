@@ -54,8 +54,7 @@ public class CPlatformView extends CFRetainedResource {
     }
 
     public void initialize(LWWindowPeer peer, CPlatformResponder responder) {
-        this.peer = peer;
-        this.responder = responder;
+        initializeBase(peer, responder);
 
         if (!LWCToolkit.getSunAwtDisableCALayers()) {
             this.windowLayer = createCGLayer();
@@ -65,6 +64,11 @@ public class CPlatformView extends CFRetainedResource {
 
     public CGLLayer createCGLayer() {
         return new CGLLayer(peer);
+    }
+
+    protected void initializeBase(LWWindowPeer peer, CPlatformResponder responder) {
+        this.peer = peer;
+        this.responder = responder;
     }
 
     public long getAWTView() {

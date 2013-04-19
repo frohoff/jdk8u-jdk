@@ -54,6 +54,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.CompositeData;
+import sun.reflect.misc.MethodUtil;
+import sun.reflect.misc.ReflectUtil;
 
 /**
  * This class contains the methods for performing all the tests needed to verify
@@ -226,6 +228,11 @@ public class Introspector {
         MXBeanIntrospector.getInstance().getAnalyzer(interfaceClass);
     }
 
+    public static void testComplianceMBeanInterface(Class<?> interfaceClass)
+            throws NotCompliantMBeanException{
+        StandardMBeanIntrospector.getInstance().getAnalyzer(interfaceClass);
+    }
+
     /**
      * Basic method for testing if a given class is a JMX compliant
      * Standard MBean.  This method is only called by the legacy code
@@ -246,6 +253,7 @@ public class Introspector {
             throws NotCompliantMBeanException {
         if (mbeanInterface == null)
             mbeanInterface = getStandardMBeanInterface(baseClass);
+        ReflectUtil.checkPackageAccess(mbeanInterface);
         MBeanIntrospector<?> introspector = StandardMBeanIntrospector.getInstance();
         return getClassMBeanInfo(introspector, baseClass, mbeanInterface);
     }
@@ -370,13 +378,19 @@ public class Introspector {
         for (Annotation a : annots) {
             Class<? extends Annotation> c = a.annotationType();
             Method[] elements = c.getMethods();
+            boolean packageAccess = false;
             for (Method element : elements) {
                 DescriptorKey key = element.getAnnotation(DescriptorKey.class);
                 if (key != null) {
                     String name = key.value();
                     Object value;
                     try {
-                        value = element.invoke(a);
+                        // Avoid checking access more than once per annotation
+                        if (!packageAccess) {
+                            ReflectUtil.checkPackageAccess(c);
+                            packageAccess = true;
+                        }
+                        value = MethodUtil.invoke(element, a, null);
                     } catch (RuntimeException e) {
                         // we don't expect this - except for possibly
                         // security exceptions?
@@ -526,8 +540,10 @@ public class Introspector {
                     // to locate method
                     readMethod = SimpleIntrospector.getReadMethod(clazz, element);
                 }
-                if (readMethod != null)
-                    return readMethod.invoke(complex);
+                if (readMethod != null) {
+                    ReflectUtil.checkPackageAccess(readMethod.getDeclaringClass());
+                    return MethodUtil.invoke(readMethod, complex, new Class[0]);
+                }
 
                 throw new AttributeNotFoundException(
                     "Could not find the getter method for the property " +

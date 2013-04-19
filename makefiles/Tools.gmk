@@ -47,11 +47,17 @@ $(eval $(call SetupJavaCompilation,BUILD_TOOLS,\
 endif
 
 $(JDK_OUTPUTDIR)/btclasses/build/tools/generatenimbus/resources/%.template : \
-	$(JDK_TOPDIR)/src/share/classes/javax/swing/plaf/nimbus/%.template
-	$(MKDIR) -p $(@D)
-	$(CP) $< $@
+		$(JDK_TOPDIR)/src/share/classes/javax/swing/plaf/nimbus/%.template
+	$(call install-file)
 
 BUILD_TOOLS += $(foreach i,$(wildcard $(JDK_TOPDIR)/src/share/classes/javax/swing/plaf/nimbus/*.template),$(JDK_OUTPUTDIR)/btclasses/build/tools/generatenimbus/resources/$(notdir $i))
+
+# Resources used by CheckDeps tool
+$(JDK_OUTPUTDIR)/btclasses/build/tools/deps/% : \
+		$(JDK_TOPDIR)/make/tools/src/build/tools/deps/%
+	$(call install-file)
+
+BUILD_TOOLS += $(JDK_OUTPUTDIR)/btclasses/build/tools/deps/refs.allowed
 
 # Add a checksum ("jsum") to the end of a text file. Prevents trivial tampering with class lists.
 TOOL_ADDJSUM=$(JAVA) -cp $(JDK_OUTPUTDIR)/btclasses \
@@ -136,6 +142,14 @@ TOOL_OSX_TOBIN=$(JAVA) -Djava.awt.headless=true -cp $(JDK_OUTPUTDIR)/btclasses \
 
 TOOL_CLDRCONVERTER=$(JAVA) -cp $(JDK_OUTPUTDIR)/btclasses \
 	build.tools.cldrconverter.CLDRConverter
+
+TOOL_REMOVEMETHODS=$(JAVA) -Xbootclasspath/p:$(LANGTOOLS_OUTPUTDIR)/dist/bootstrap/lib/javac.jar \
+    -cp $(JDK_OUTPUTDIR)/btclasses:$(JDK_OUTPUTDIR) \
+        build.tools.classfile.RemoveMethods
+
+TOOL_CHECKDEPS=$(JAVA) -Xbootclasspath/p:$(LANGTOOLS_OUTPUTDIR)/dist/bootstrap/lib/javac.jar \
+    -cp $(JDK_OUTPUTDIR)/btclasses:$(JDK_OUTPUTDIR) \
+        build.tools.deps.CheckDeps
 
 ##########################################################################################
 

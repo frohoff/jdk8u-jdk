@@ -534,7 +534,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
     /**
      * Gets the {@code TimeZone} for the given {@code zoneId}.
      *
-     * @param zoneid a {@link ZoneId} from which the time zone ID is obtained
+     * @param zoneId a {@link ZoneId} from which the time zone ID is obtained
      * @return the specified {@code TimeZone}, or the GMT zone if the given ID
      *         cannot be understood.
      * @throws NullPointerException if {@code zoneId} is {@code null}
@@ -559,7 +559,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
      * @since 1.8
      */
     public ZoneId toZoneId() {
-        return ZoneId.of(getID(), ZoneId.OLD_IDS_POST_2005);
+        return ZoneId.of(getID(), ZoneId.SHORT_IDS);
     }
 
     private static TimeZone getTimeZone(String ID, boolean fallback) {

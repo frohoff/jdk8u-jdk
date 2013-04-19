@@ -70,6 +70,9 @@ class SocketChannelImpl
 
     // -- The following fields are protected by stateLock
 
+    // set true when exclusive binding is on and SO_REUSEADDR is emulated
+    private boolean isReuseAddress;
+
     // State, increases monotonically
     private static final int ST_UNINITIALIZED = -1;
     private static final int ST_UNCONNECTED = 0;
@@ -80,8 +83,8 @@ class SocketChannelImpl
     private int state = ST_UNINITIALIZED;
 
     // Binding
-    private SocketAddress localAddress;
-    private SocketAddress remoteAddress;
+    private InetSocketAddress localAddress;
+    private InetSocketAddress remoteAddress;
 
     // Input/Output open
     private boolean isInputOpen = true;
@@ -143,7 +146,7 @@ class SocketChannelImpl
         synchronized (stateLock) {
             if (!isOpen())
                 throw new ClosedChannelException();
-            return localAddress;
+            return  Net.getRevealedLocalAddress(localAddress);
         }
     }
 
@@ -174,6 +177,12 @@ class SocketChannelImpl
                 if (!Net.isIPv6Available())
                     Net.setSocketOption(fd, StandardProtocolFamily.INET, name, value);
                 return this;
+            } else if (name == StandardSocketOptions.SO_REUSEADDR &&
+                           Net.useExclusiveBind())
+            {
+                // SO_REUSEADDR emulated when using exclusive bind
+                isReuseAddress = (Boolean)value;
+                return this;
             }
 
             // no options that require special handling
@@ -195,6 +204,13 @@ class SocketChannelImpl
         synchronized (stateLock) {
             if (!isOpen())
                 throw new ClosedChannelException();
+
+            if (name == StandardSocketOptions.SO_REUSEADDR &&
+                    Net.useExclusiveBind())
+            {
+                // SO_REUSEADDR emulated when using exclusive bind
+                return (T)Boolean.valueOf(isReuseAddress);
+            }
 
             // special handling for IP_TOS: always return 0 when IPv6
             if (name == StandardSocketOptions.IP_TOS) {
@@ -356,7 +372,7 @@ class SocketChannelImpl
                 // except that the shutdown operation plays the role of
                 // nd.preClose().
                 for (;;) {
-                    n = IOUtil.read(fd, buf, -1, nd, readLock);
+                    n = IOUtil.read(fd, buf, -1, nd);
                     if ((n == IOStatus.INTERRUPTED) && isOpen()) {
                         // The system call was interrupted but the channel
                         // is still open, so retry
@@ -447,7 +463,7 @@ class SocketChannelImpl
                     writerThread = NativeThread.current();
                 }
                 for (;;) {
-                    n = IOUtil.write(fd, buf, -1, nd, writeLock);
+                    n = IOUtil.write(fd, buf, -1, nd);
                     if ((n == IOStatus.INTERRUPTED) && isOpen())
                         continue;
                     return IOStatus.normalize(n);
@@ -531,7 +547,7 @@ class SocketChannelImpl
         IOUtil.configureBlocking(fd, block);
     }
 
-    public SocketAddress localAddress() {
+    public InetSocketAddress localAddress() {
         synchronized (stateLock) {
             return localAddress;
         }
@@ -958,6 +974,7 @@ class SocketChannelImpl
         return fdVal;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(this.getClass().getSuperclass().getName());
@@ -981,9 +998,10 @@ class SocketChannelImpl
                         sb.append(" oshut");
                     break;
                 }
-                if (localAddress() != null) {
+                InetSocketAddress addr = localAddress();
+                if (addr != null) {
                     sb.append(" local=");
-                    sb.append(localAddress().toString());
+                    sb.append(Net.getRevealedLocalAddressAsString(addr));
                 }
                 if (remoteAddress() != null) {
                     sb.append(" remote=");

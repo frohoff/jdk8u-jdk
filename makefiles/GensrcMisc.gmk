@@ -23,24 +23,29 @@
 # questions.
 #
 
+include ProfileNames.gmk
+
 ##########################################################################################
 # Install the launcher name, release version string, full version
 # string and the runtime name into the Version.java file.
 # To be printed by java -version
 
-$(JDK_OUTPUTDIR)/gensrc/sun/misc/Version.java: \
-	$(JDK_TOPDIR)/src/share/classes/sun/misc/Version.java.template
+$(JDK_OUTPUTDIR)/gensrc/sun/misc/Version.java \
+$(PROFILE_VERSION_JAVA_TARGETS): \
+		$(JDK_TOPDIR)/src/share/classes/sun/misc/Version.java.template
 	$(MKDIR) -p $(@D)
 	$(RM) $@ $@.tmp
-	$(ECHO) $(LOG_INFO) Generating sun/misc/Version.java
+	$(ECHO) Generating sun/misc/Version.java $(call profile_version_name, $@)
 	$(SED) -e 's/@@launcher_name@@/$(LAUNCHER_NAME)/g' \
 	       -e 's/@@java_version@@/$(RELEASE)/g' \
 	       -e 's/@@java_runtime_version@@/$(FULL_VERSION)/g' \
 	       -e 's/@@java_runtime_name@@/$(RUNTIME_NAME)/g' \
+	       -e 's/@@java_profile_name@@/$(call profile_version_name, $@)/g' \
             $< > $@.tmp
 	$(MV) $@.tmp $@
 
-GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/misc/Version.java
+GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/sun/misc/Version.java \
+    $(PROFILE_VERSION_JAVA_TARGETS)
 
 ##########################################################################################
 # Version file for jconsole
@@ -67,9 +72,8 @@ ifeq ($(OPENJDK_TARGET_OS_API),posix)
 
     $(JDK_OUTPUTDIR)/gensrc/java/lang/UNIXProcess.java : \
               $(JDK_TOPDIR)/src/solaris/classes/java/lang/UNIXProcess.java.$(UPSUFFIX)
-	$(MKDIR) -p $(@D)
 	$(ECHO) $(LOG_INFO) Copying UNIXProcess.java.$(OPENJDK_TARGET_OS) to java/lang/UNIXProcess.java
-	$(CP) $< $@
+	$(call install-file)
 	$(CHMOD) u+rw $@
 
     GENSRC_MISC += $(JDK_OUTPUTDIR)/gensrc/java/lang/UNIXProcess.java
@@ -109,9 +113,7 @@ $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java : $(BUILD_GENSRC_SO
 	$(MV) $@.tmp $@
 else
 $(JDK_OUTPUTDIR)/gensrc/sun/nio/ch/SocketOptionRegistry.java : $(JDK_TOPDIR)/src/closed/solaris/classes/sun/nio/ch/SocketOptionRegistry-$(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU_ARCH).java
-	$(MKDIR) -p $(@D)
-	$(RM) $@
-	$(CP) $< $@
+	$(call install-file)
 endif
 
 ##########################################################################################
@@ -151,9 +153,7 @@ $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java : $(BUILD_GENSRC_UC_EXE)
 	$(MV) $@.tmp $@
 else
 $(JDK_OUTPUTDIR)/gensrc/sun/nio/fs/UnixConstants.java : $(JDK_TOPDIR)/src/closed/solaris/classes/sun/nio/fs/UnixConstants-$(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU_ARCH).java
-	$(MKDIR) -p $(@D)
-	$(RM) $@
-	$(CP) $< $@
+	$(call install-file)
 endif
 
 endif

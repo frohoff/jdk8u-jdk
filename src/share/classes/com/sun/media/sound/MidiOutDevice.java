@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2007, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -36,7 +36,7 @@ import javax.sound.midi.*;
  * @author Kara Kytle
  * @author Florian Bomers
  */
-class MidiOutDevice extends AbstractMidiDevice {
+final class MidiOutDevice extends AbstractMidiDevice {
 
     // CONSTRUCTOR
 
@@ -101,11 +101,11 @@ class MidiOutDevice extends AbstractMidiDevice {
 
     // INNER CLASSES
 
-    class MidiOutReceiver extends AbstractReceiver {
+    final class MidiOutReceiver extends AbstractReceiver {
 
-        protected void implSend(MidiMessage message, long timeStamp) {
-            int length = message.getLength();
-            int status = message.getStatus();
+        void implSend(final MidiMessage message, final long timeStamp) {
+            final int length = message.getLength();
+            final int status = message.getStatus();
             if (length <= 3 && status != 0xF0 && status != 0xF7) {
                 int packedMsg;
                 if (message instanceof ShortMessage) {
@@ -140,11 +140,15 @@ class MidiOutDevice extends AbstractMidiDevice {
                 }
                 nSendShortMessage(id, packedMsg, timeStamp);
             } else {
+                final byte[] data;
                 if (message instanceof FastSysexMessage) {
-                    nSendLongMessage(id, ((FastSysexMessage) message).getReadOnlyMessage(),
-                                     length, timeStamp);
+                    data = ((FastSysexMessage) message).getReadOnlyMessage();
                 } else {
-                    nSendLongMessage(id, message.getMessage(), length, timeStamp);
+                    data = message.getMessage();
+                }
+                final int dataLength = Math.min(length, data.length);
+                if (dataLength > 0) {
+                    nSendLongMessage(id, data, dataLength, timeStamp);
                 }
             }
         }

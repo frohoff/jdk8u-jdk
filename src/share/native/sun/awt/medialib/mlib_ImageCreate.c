@@ -120,6 +120,7 @@
 #include "mlib_image.h"
 #include "mlib_ImageRowTable.h"
 #include "mlib_ImageCreate.h"
+#include "safe_math.h"
 
 /***************************************************************/
 mlib_image* mlib_ImageSet(mlib_image *image,
@@ -159,27 +160,46 @@ mlib_image* mlib_ImageSet(mlib_image *image,
 /* Check if stride == width
    * If it is then image can be treated as a 1-D vector
  */
+
+  if (!SAFE_TO_MULT(width, channels)) {
+    return NULL;
+  }
+
+  wb = width * channels;
+
   switch (type) {
     case MLIB_DOUBLE:
-      wb = width * channels * 8;
+      if (!SAFE_TO_MULT(wb, 8)) {
+        return NULL;
+      }
+      wb *= 8;
       mask = 7;
       break;
     case MLIB_FLOAT:
     case MLIB_INT:
-      wb = width * channels * 4;
+      if (!SAFE_TO_MULT(wb, 4)) {
+        return NULL;
+      }
+      wb *= 4;
       mask = 3;
       break;
     case MLIB_USHORT:
     case MLIB_SHORT:
-      wb = width * channels * 2;
+      if (!SAFE_TO_MULT(wb, 2)) {
+        return NULL;
+      }
+      wb *= 2;
       mask = 1;
       break;
     case MLIB_BYTE:
-      wb = width * channels;
+      // wb is ready
       mask = 0;
       break;
     case MLIB_BIT:
-      wb = (width * channels + 7) / 8;
+      if (!SAFE_TO_ADD(7, wb)) {
+        return NULL;
+      }
+      wb = (wb + 7) / 8;
       mask = 0;
       break;
     default:
@@ -247,25 +267,47 @@ mlib_image *mlib_ImageCreate(mlib_type type,
     return NULL;
   };
 
+  if (!SAFE_TO_MULT(width, channels)) {
+    return NULL;
+  }
+
+  wb = width * channels;
+
   switch (type) {
     case MLIB_DOUBLE:
-      wb = width * channels * 8;
+      if (!SAFE_TO_MULT(wb, 8)) {
+        return NULL;
+      }
+      wb *= 8;
       break;
     case MLIB_FLOAT:
     case MLIB_INT:
-      wb = width * channels * 4;
+      if (!SAFE_TO_MULT(wb, 4)) {
+        return NULL;
+      }
+      wb *= 4;
       break;
     case MLIB_USHORT:
     case MLIB_SHORT:
-      wb = width * channels * 2;
+      if (!SAFE_TO_MULT(wb, 2)) {
+        return NULL;
+      }
+      wb *= 2;
       break;
     case MLIB_BYTE:
-      wb = width * channels;
+      // wb is ready
       break;
     case MLIB_BIT:
-      wb = (width * channels + 7) / 8;
+      if (!SAFE_TO_ADD(7, wb)) {
+        return NULL;
+      }
+      wb = (wb + 7) / 8;
       break;
     default:
+      return NULL;
+  }
+
+  if (!SAFE_TO_MULT(wb, height)) {
       return NULL;
   }
 

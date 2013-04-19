@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1996, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -41,7 +41,7 @@ import java.util.*;
 import javax.security.auth.x500.X500Principal;
 
 import sun.misc.HexDumpEncoder;
-import sun.misc.BASE64Decoder;
+import java.util.Base64;
 import sun.security.util.*;
 import sun.security.provider.X509Factory;
 
@@ -263,7 +263,6 @@ public class X509CertImpl extends X509Certificate implements DerEncoder {
         }
         if (line.equals(X509Factory.BEGIN_CERT)) {
             /* stream appears to be hex-encoded bytes */
-            BASE64Decoder         decoder   = new BASE64Decoder();
             ByteArrayOutputStream decstream = new ByteArrayOutputStream();
             try {
                 while ((line = certBufferedReader.readLine()) != null) {
@@ -271,7 +270,7 @@ public class X509CertImpl extends X509Certificate implements DerEncoder {
                         der = new DerValue(decstream.toByteArray());
                         break;
                     } else {
-                        decstream.write(decoder.decodeBuffer(line));
+                        decstream.write(Base64.getMimeDecoder().decode(line));
                     }
                 }
             } catch (IOException ioe2) {
@@ -1094,6 +1093,18 @@ public class X509CertImpl extends X509Certificate implements DerEncoder {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public KeyIdentifier getAuthKeyId() {
+        AuthorityKeyIdentifierExtension aki
+            = getAuthorityKeyIdentifierExtension();
+        if (aki != null) {
+            try {
+                return (KeyIdentifier)aki.get(
+                    AuthorityKeyIdentifierExtension.KEY_ID);
+            } catch (IOException ioe) {} // not possible
+        }
+        return null;
     }
 
     /**
