@@ -1899,14 +1899,20 @@ public class File
 
         // file name generation
         private static final SecureRandom random = new SecureRandom();
-        static File generateFile(String prefix, String suffix, File dir) {
+        static File generateFile(String prefix, String suffix, File dir)
+            throws IOException
+        {
             long n = random.nextLong();
             if (n == Long.MIN_VALUE) {
                 n = 0;      // corner case
             } else {
                 n = Math.abs(n);
             }
-            return new File(dir, prefix + Long.toString(n) + suffix);
+            String name = prefix + Long.toString(n) + suffix;
+            File f = new File(dir, name);
+            if (!name.equals(f.getName()) || f.isInvalid())
+                throw new IOException("Unable to create temporary file");
+            return f;
         }
     }
 
@@ -1988,11 +1994,13 @@ public class File
         if (suffix == null)
             suffix = ".tmp";
 
-        File tmpdir = (directory != null) ? directory : TempDirectory.location();
+        File tmpdir = (directory != null) ? directory
+                                          : TempDirectory.location();
         SecurityManager sm = System.getSecurityManager();
         File f;
         do {
             f = TempDirectory.generateFile(prefix, suffix, tmpdir);
+
             if (sm != null) {
                 try {
                     sm.checkWrite(f.getPath());
@@ -2003,10 +2011,11 @@ public class File
                     throw se;
                 }
             }
-            if (f.isInvalid()) {
-                throw new IOException("Unable to create temporary file");
-            }
-        } while (!fs.createFileExclusively(f.getPath()));
+        } while ((fs.getBooleanAttributes(f) & FileSystem.BA_EXISTS) != 0);
+
+        if (!fs.createFileExclusively(f.getPath()))
+            throw new IOException("Unable to create temporary file");
+
         return f;
     }
 

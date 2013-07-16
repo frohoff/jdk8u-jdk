@@ -60,7 +60,7 @@ public interface CharSequence {
 
     /**
      * Returns the length of this character sequence.  The length is the number
-     * of 16-bit <code>char</code>s in the sequence.</p>
+     * of 16-bit <code>char</code>s in the sequence.
      *
      * @return  the number of <code>char</code>s in this sequence
      */
@@ -70,7 +70,7 @@ public interface CharSequence {
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero
      * to <tt>length() - 1</tt>.  The first <code>char</code> value of the sequence is at
      * index zero, the next at index one, and so on, as for array
-     * indexing. </p>
+     * indexing.
      *
      * <p>If the <code>char</code> value specified by the index is a
      * <a href="{@docRoot}/java/lang/Character.html#unicode">surrogate</a>, the surrogate
@@ -92,7 +92,7 @@ public interface CharSequence {
      * ends with the <code>char</code> value at index <tt>end - 1</tt>.  The length
      * (in <code>char</code>s) of the
      * returned sequence is <tt>end - start</tt>, so if <tt>start == end</tt>
-     * then an empty sequence is returned. </p>
+     * then an empty sequence is returned.
      *
      * @param   start   the start index, inclusive
      * @param   end     the end index, exclusive
@@ -109,7 +109,7 @@ public interface CharSequence {
     /**
      * Returns a string containing the characters in this sequence in the same
      * order as this sequence.  The length of the string will be the length of
-     * this sequence. </p>
+     * this sequence.
      *
      * @return  a string consisting of exactly this sequence of characters
      */
@@ -156,7 +156,8 @@ public interface CharSequence {
                         new CharIterator(),
                         length(),
                         Spliterator.ORDERED),
-                Spliterator.SUBSIZED | Spliterator.SIZED | Spliterator.ORDERED);
+                Spliterator.SUBSIZED | Spliterator.SIZED | Spliterator.ORDERED,
+                false);
     }
 
     /**
@@ -179,10 +180,25 @@ public interface CharSequence {
 
             @Override
             public void forEachRemaining(IntConsumer block) {
-                while (cur < length()) {
-                    int cp = Character.codePointAt(CharSequence.this, cur);
-                    cur += Character.charCount(cp);
-                    block.accept(cp);
+                final int length = length();
+                int i = cur;
+                try {
+                    while (i < length) {
+                        char c1 = charAt(i++);
+                        if (!Character.isHighSurrogate(c1) || i >= length) {
+                            block.accept(c1);
+                        } else {
+                            char c2 = charAt(i);
+                            if (Character.isLowSurrogate(c2)) {
+                                i++;
+                                block.accept(Character.toCodePoint(c1, c2));
+                            } else {
+                                block.accept(c1);
+                            }
+                        }
+                    }
+                } finally {
+                    cur = i;
                 }
             }
 
@@ -191,12 +207,20 @@ public interface CharSequence {
             }
 
             public int nextInt() {
-                if (!hasNext()) {
+                final int length = length();
+
+                if (cur >= length) {
                     throw new NoSuchElementException();
                 }
-                int cp = Character.codePointAt(CharSequence.this, cur);
-                cur += Character.charCount(cp);
-                return cp;
+                char c1 = charAt(cur++);
+                if (Character.isHighSurrogate(c1) && cur < length) {
+                    char c2 = charAt(cur);
+                    if (Character.isLowSurrogate(c2)) {
+                        cur++;
+                        return Character.toCodePoint(c1, c2);
+                    }
+                }
+                return c1;
             }
         }
 
@@ -204,6 +228,7 @@ public interface CharSequence {
                 Spliterators.spliteratorUnknownSize(
                         new CodePointIterator(),
                         Spliterator.ORDERED),
-                Spliterator.SUBSIZED | Spliterator.SIZED | Spliterator.ORDERED);
+                Spliterator.SUBSIZED | Spliterator.SIZED | Spliterator.ORDERED,
+                false);
     }
 }

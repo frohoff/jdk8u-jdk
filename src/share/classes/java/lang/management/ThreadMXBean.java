@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2008, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2013, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -49,7 +49,7 @@ import java.util.Map;
  * It can be obtained by calling the
  * {@link PlatformManagedObject#getObjectName} method.
  *
- * <h4>Thread ID</h4>
+ * <h3>Thread ID</h3>
  * Thread ID is a positive long value returned by calling the
  * {@link java.lang.Thread#getId} method for a thread.
  * The thread ID is unique during its lifetime.  When a thread
@@ -58,7 +58,7 @@ import java.util.Map;
  * <p> Some methods in this interface take a thread ID or an array
  * of thread IDs as the input parameter and return per-thread information.
  *
- * <h4>Thread CPU time</h4>
+ * <h3>Thread CPU time</h3>
  * A Java virtual machine implementation may support measuring
  * the CPU time for the current thread, for any thread, or for no threads.
  *
@@ -83,7 +83,7 @@ import java.util.Map;
  * Enabling thread CPU measurement could be expensive in some
  * Java virtual machine implementations.
  *
- * <h4>Thread Contention Monitoring</h4>
+ * <h3>Thread Contention Monitoring</h3>
  * Some Java virtual machines may support thread contention monitoring.
  * When thread contention monitoring is enabled, the accumulated elapsed
  * time that the thread has blocked for synchronization or waited for
@@ -96,7 +96,7 @@ import java.util.Map;
  * {@link #setThreadContentionMonitoringEnabled} method can be used to enable
  * thread contention monitoring.
  *
- * <h4>Synchronization Information and Deadlock Detection</h4>
+ * <h3>Synchronization Information and Deadlock Detection</h3>
  * Some Java virtual machines may support monitoring of
  * {@linkplain #isObjectMonitorUsageSupported object monitor usage} and
  * {@linkplain #isSynchronizerUsageSupported ownable synchronizer usage}.
@@ -198,7 +198,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      * <tt>null</tt> if the thread of the given ID is not alive or
      * it does not exist.
      *
-     * @throws IllegalArgumentException if <tt>id &lt= 0</tt>.
+     * @throws IllegalArgumentException if {@code id <= 0}.
      * @throws java.lang.SecurityException if a security manager
      *         exists and the caller does not have
      *         ManagementPermission("monitor").
@@ -236,7 +236,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      * with no stack trace, no locked monitor and no synchronizer info.
      *
      * @throws IllegalArgumentException if any element in the input array
-     *      <tt>ids</tt> is <tt>&lt= 0</tt>.
+     *         <tt>ids</tt> is {@code <= 0}.
      * @throws java.lang.SecurityException if a security manager
      *         exists and the caller does not have
      *         ManagementPermission("monitor").
@@ -282,7 +282,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      * <tt>null</tt> if the thread of the given ID is not alive or
      * it does not exist.
      *
-     * @throws IllegalArgumentException if <tt>id &lt= 0</tt>.
+     * @throws IllegalArgumentException if {@code id <= 0}.
      * @throws IllegalArgumentException if <tt>maxDepth is negative</tt>.
      * @throws java.lang.SecurityException if a security manager
      *         exists and the caller does not have
@@ -336,7 +336,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      *
      * @throws IllegalArgumentException if <tt>maxDepth is negative</tt>.
      * @throws IllegalArgumentException if any element in the input array
-     *      <tt>ids</tt> is <tt>&lt= 0</tt>.
+     *      <tt>ids</tt> is {@code <= 0}.
      * @throws java.lang.SecurityException if a security manager
      *         exists and the caller does not have
      *         ManagementPermission("monitor").
@@ -466,7 +466,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      * and CPU time measurement is enabled;
      * <tt>-1</tt> otherwise.
      *
-     * @throws IllegalArgumentException if <tt>id &lt= 0 </tt>.
+     * @throws IllegalArgumentException if {@code id <= 0}.
      * @throws java.lang.UnsupportedOperationException if the Java
      * virtual machine does not support CPU time measurement for
      * other threads.
@@ -501,7 +501,7 @@ public interface ThreadMXBean extends PlatformManagedObject {
      * and CPU time measurement is enabled;
      * <tt>-1</tt> otherwise.
      *
-     * @throws IllegalArgumentException if <tt>id &lt= 0 </tt>.
+     * @throws IllegalArgumentException if {@code id <= 0}.
      * @throws java.lang.UnsupportedOperationException if the Java
      * virtual machine does not support CPU time measurement for
      * other threads.

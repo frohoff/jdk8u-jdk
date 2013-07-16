@@ -25,11 +25,7 @@
 package java.util.stream;
 
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Objects;
 import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 import java.util.function.IntConsumer;
@@ -44,7 +40,7 @@ import java.util.function.LongConsumer;
  *
  * @since 1.8
  */
-class Streams {
+final class Streams {
 
     private Streams() {
         throw new Error("no instances");
@@ -62,39 +58,62 @@ class Streams {
      * An {@code int} range spliterator.
      */
     static final class RangeIntSpliterator implements Spliterator.OfInt {
+        // Can never be greater that upTo, this avoids overflow if upper bound
+        // is Integer.MAX_VALUE
+        // All elements are traversed if from == upTo & last == 0
         private int from;
         private final int upTo;
-        private final int step;
+        // 1 if the range is closed and the last element has not been traversed
+        // Otherwise, 0 if the range is open, or is a closed range and all
+        // elements have been traversed
+        private int last;
 
-        RangeIntSpliterator(int from, int upTo, int step) {
+        RangeIntSpliterator(int from, int upTo, boolean closed) {
+            this(from, upTo, closed ? 1 : 0);
+        }
+
+        private RangeIntSpliterator(int from, int upTo, int last) {
             this.from = from;
             this.upTo = upTo;
-            this.step = step;
+            this.last = last;
         }
 
         @Override
         public boolean tryAdvance(IntConsumer consumer) {
-            boolean hasNext = from < upTo;
-            if (hasNext) {
-                consumer.accept(from);
-                from += step;
+            final int i = from;
+            if (i < upTo) {
+                from++;
+                consumer.accept(i);
+                return true;
             }
-            return hasNext;
+            else if (last > 0) {
+                last = 0;
+                consumer.accept(i);
+                return true;
+            }
+            return false;
         }
 
         @Override
         public void forEachRemaining(IntConsumer consumer) {
-            int hUpTo = upTo;
-            int hStep = step; // hoist accesses and checks from loop
-            for (int i = from; i < hUpTo; i += hStep)
-                consumer.accept(i);
+            int i = from;
+            final int hUpTo = upTo;
+            int hLast = last;
             from = upTo;
+            last = 0;
+            while (i < hUpTo) {
+                consumer.accept(i++);
+            }
+            if (hLast > 0) {
+                // Last element of closed range
+                consumer.accept(i);
+            }
         }
 
         @Override
         public long estimateSize() {
-            int d = upTo - from;
-            return (d / step) + ((d % step == 0) ? 0 : 1);
+            // Ensure ranges of size > Integer.MAX_VALUE report the correct size
+            return ((long) upTo) - from + last;
         }
 
         @Override
@@ -111,57 +130,108 @@ class Streams {
 
         @Override
         public Spliterator.OfInt trySplit() {
-            return estimateSize() <= 1
+            long size = estimateSize();
+            return size <= 1
                    ? null
-                   : new RangeIntSpliterator(from, from = from + midPoint(), step);
+                   // Left split always has a half-open range
+                   : new RangeIntSpliterator(from, from = from + splitPoint(size), 0);
         }
 
-        private int midPoint() {
-            // Size is known to be >= 2
-            int bisection = (upTo - from) / 2;
-            // If bisection > step then round down to nearest multiple of step
-            // otherwise round up to step
-            return bisection > step ? bisection - bisection % step : step;
+        /**
+         * The spliterator size below which the spliterator will be split
+         * at the mid-point to produce balanced splits. Above this size the
+         * spliterator will be split at a ratio of
+         * 1:(RIGHT_BALANCED_SPLIT_RATIO - 1)
+         * to produce right-balanced splits.
+         *
+         * <p>Such splitting ensures that for very large ranges that the left
+         * side of the range will more likely be processed at a lower-depth
+         * than a balanced tree at the expense of a higher-depth for the right
+         * side of the range.
+         *
+         * <p>This is optimized for cases such as IntStream.ints() that is
+         * implemented as range of 0 to Integer.MAX_VALUE but is likely to be
+         * augmented with a limit operation that limits the number of elements
+         * to a count lower than this threshold.
+         */
+        private static final int BALANCED_SPLIT_THRESHOLD = 1 << 24;
+
+        /**
+         * The split ratio of the left and right split when the spliterator
+         * size is above BALANCED_SPLIT_THRESHOLD.
+         */
+        private static final int RIGHT_BALANCED_SPLIT_RATIO = 1 << 3;
+
+        private int splitPoint(long size) {
+            int d = (size < BALANCED_SPLIT_THRESHOLD) ? 2 : RIGHT_BALANCED_SPLIT_RATIO;
+            // 2 <= size <= 2^32
+            return (int) (size / d);
         }
     }
 
     /**
      * A {@code long} range spliterator.
+     *
+     * This implementation cannot be used for ranges whose size is greater
+     * than Long.MAX_VALUE
      */
     static final class RangeLongSpliterator implements Spliterator.OfLong {
+        // Can never be greater that upTo, this avoids overflow if upper bound
+        // is Long.MAX_VALUE
+        // All elements are traversed if from == upTo & last == 0
         private long from;
         private final long upTo;
-        private final long step;
+        // 1 if the range is closed and the last element has not been traversed
+        // Otherwise, 0 if the range is open, or is a closed range and all
+        // elements have been traversed
+        private int last;
 
-        RangeLongSpliterator(long from, long upTo, long step) {
+        RangeLongSpliterator(long from, long upTo, boolean closed) {
+            this(from, upTo, closed ? 1 : 0);
+        }
+
+        private RangeLongSpliterator(long from, long upTo, int last) {
+            assert upTo - from + last > 0;
             this.from = from;
             this.upTo = upTo;
-            this.step = step;
+            this.last = last;
         }
 
         @Override
         public boolean tryAdvance(LongConsumer consumer) {
-            boolean hasNext = from < upTo;
-            if (hasNext) {
-                consumer.accept(from);
-                from += step;
+            final long i = from;
+            if (i < upTo) {
+                from++;
+                consumer.accept(i);
+                return true;
             }
-            return hasNext;
+            else if (last > 0) {
+                last = 0;
+                consumer.accept(i);
+                return true;
+            }
+            return false;
         }
 
         @Override
         public void forEachRemaining(LongConsumer consumer) {
-            long hUpTo = upTo;
-            long hStep = step; // hoist accesses and checks from loop
-            for (long i = from; i < hUpTo; i += hStep)
-                consumer.accept(i);
+            long i = from;
+            final long hUpTo = upTo;
+            int hLast = last;
             from = upTo;
+            last = 0;
+            while (i < hUpTo) {
+                consumer.accept(i++);
+            }
+            if (hLast > 0) {
+                // Last element of closed range
+                consumer.accept(i);
+            }
         }
 
         @Override
         public long estimateSize() {
-            long d = upTo - from;
-            return (d / step) + ((d % step == 0) ? 0 : 1);
+            return upTo - from + last;
         }
 
         @Override
@@ -178,98 +248,42 @@ class Streams {
 
         @Override
         public Spliterator.OfLong trySplit() {
-            return estimateSize() <= 1
+            long size = estimateSize();
+            return size <= 1
                    ? null
-                   : new RangeLongSpliterator(from, from = from + midPoint(), step);
+                   // Left split always has a half-open range
+                   : new RangeLongSpliterator(from, from = from + splitPoint(size), 0);
         }
 
-        private long midPoint() {
-            // Size is known to be >= 2
-            long bisection = (upTo - from) / 2;
-            // If bisection > step then round down to nearest multiple of step
-            // otherwise round up to step
-            return bisection > step ? bisection - bisection % step : step;
-        }
-    }
+        /**
+         * The spliterator size below which the spliterator will be split
+         * at the mid-point to produce balanced splits. Above this size the
+         * spliterator will be split at a ratio of
+         * 1:(RIGHT_BALANCED_SPLIT_RATIO - 1)
+         * to produce right-balanced splits.
+         *
+         * <p>Such splitting ensures that for very large ranges that the left
+         * side of the range will more likely be processed at a lower-depth
+         * than a balanced tree at the expense of a higher-depth for the right
+         * side of the range.
+         *
+         * <p>This is optimized for cases such as LongStream.longs() that is
+         * implemented as range of 0 to Long.MAX_VALUE but is likely to be
+         * augmented with a limit operation that limits the number of elements
+         * to a count lower than this threshold.
+         */
+        private static final long BALANCED_SPLIT_THRESHOLD = 1 << 24;
 
-    /**
-     * A {@code double} range spliterator.
-     *
-     * <p>The traversing and splitting logic is equivalent to that of
-     * {@code RangeLongSpliterator} for increasing values with a {@code step} of
-     * {@code 1}.
-     *
-     *  <p>A {@code double} value is calculated from the function
-     * {@code start + i * step} where {@code i} is the absolute position of the
-     * value when traversing an instance of this class that has not been split.
-     * This ensures the same values are produced at the same absolute positions
-     * regardless of how an instance of this class is split or traversed.
-     */
-    static final class RangeDoubleSpliterator implements Spliterator.OfDouble {
-        private final double from;
-        private final double upTo;
-        private final double step;
+        /**
+         * The split ratio of the left and right split when the spliterator
+         * size is above BALANCED_SPLIT_THRESHOLD.
+         */
+        private static final long RIGHT_BALANCED_SPLIT_RATIO = 1 << 3;
 
-        private long lFrom;
-        private final long lUpTo;
-
-        RangeDoubleSpliterator(double from, double upTo, double step, long lFrom, long lUpTo) {
-            this.from = from;
-            this.upTo = upTo;
-            this.step = step;
-            this.lFrom = lFrom;
-            this.lUpTo = lUpTo;
-        }
-
-        @Override
-        public boolean tryAdvance(DoubleConsumer consumer) {
-            boolean hasNext = lFrom < lUpTo;
-            if (hasNext) {
-                consumer.accept(from + lFrom * step);
-                lFrom++;
-            }
-            return hasNext;
-        }
-
-        @Override
-        public void forEachRemaining(DoubleConsumer consumer) {
-            double hOrigin = from;
-            double hStep = step;
-            long hLUpTo = lUpTo;
-            long i = lFrom;
-            for (; i < hLUpTo; i++) {
-                consumer.accept(hOrigin + i * hStep);
-            }
-            lFrom = i;
-        }
-
-        @Override
-        public long estimateSize() {
-            return lUpTo - lFrom;
-        }
-
-        @Override
-        public int characteristics() {
-            return Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED |
-                   Spliterator.IMMUTABLE | Spliterator.NONNULL |
-                   Spliterator.DISTINCT | Spliterator.SORTED;
-        }
-
-        @Override
-        public Comparator<? super Double> getComparator() {
-            return null;
-        }
-
-        @Override
-        public Spliterator.OfDouble trySplit() {
-            return estimateSize() <= 1
-                   ? null
-                   : new RangeDoubleSpliterator(from, upTo, step, lFrom, lFrom = lFrom + midPoint());
-        }
-
-        private long midPoint() {
-            // Size is known to be >= 2
-            return (lUpTo - lFrom) / 2;
+        private long splitPoint(long size) {
+            long d = (size < BALANCED_SPLIT_THRESHOLD) ? 2 : RIGHT_BALANCED_SPLIT_RATIO;
+            // 2 <= size <= Long.MAX_VALUE
+            return size / d;
         }
     }
 
@@ -303,7 +317,7 @@ class Streams {
 
     static final class StreamBuilderImpl<T>
             extends AbstractStreamBuilderImpl<T, Spliterator<T>>
-            implements StreamBuilder<T> {
+            implements Stream.Builder<T> {
         // The first element in the stream
         // valid if count == 1
         T first;
@@ -349,7 +363,7 @@ class Streams {
             }
         }
 
-        public StreamBuilder<T> add(T t) {
+        public Stream.Builder<T> add(T t) {
             accept(t);
             return this;
         }
@@ -362,7 +376,7 @@ class Streams {
                 count = -count - 1;
                 // Use this spliterator if 0 or 1 elements, otherwise use
                 // the spliterator of the spined buffer
-                return (c < 2) ? StreamSupport.stream(this) : StreamSupport.stream(buffer.spliterator());
+                return (c < 2) ? StreamSupport.stream(this, false) : StreamSupport.stream(buffer.spliterator(), false);
             }
 
             throw new IllegalStateException();
@@ -395,7 +409,7 @@ class Streams {
 
     static final class IntStreamBuilderImpl
             extends AbstractStreamBuilderImpl<Integer, Spliterator.OfInt>
-            implements StreamBuilder.OfInt, Spliterator.OfInt {
+            implements IntStream.Builder, Spliterator.OfInt {
         // The first element in the stream
         // valid if count == 1
         int first;
@@ -449,7 +463,7 @@ class Streams {
                 count = -count - 1;
                 // Use this spliterator if 0 or 1 elements, otherwise use
                 // the spliterator of the spined buffer
-                return (c < 2) ? StreamSupport.intStream(this) : StreamSupport.intStream(buffer.spliterator());
+                return (c < 2) ? StreamSupport.intStream(this, false) : StreamSupport.intStream(buffer.spliterator(), false);
             }
 
             throw new IllegalStateException();
@@ -482,7 +496,7 @@ class Streams {
 
     static final class LongStreamBuilderImpl
             extends AbstractStreamBuilderImpl<Long, Spliterator.OfLong>
-            implements StreamBuilder.OfLong, Spliterator.OfLong {
+            implements LongStream.Builder, Spliterator.OfLong {
         // The first element in the stream
         // valid if count == 1
         long first;
@@ -536,7 +550,7 @@ class Streams {
                 count = -count - 1;
                 // Use this spliterator if 0 or 1 elements, otherwise use
                 // the spliterator of the spined buffer
-                return (c < 2) ? StreamSupport.longStream(this) : StreamSupport.longStream(buffer.spliterator());
+                return (c < 2) ? StreamSupport.longStream(this, false) : StreamSupport.longStream(buffer.spliterator(), false);
             }
 
             throw new IllegalStateException();
@@ -569,7 +583,7 @@ class Streams {
 
     static final class DoubleStreamBuilderImpl
             extends AbstractStreamBuilderImpl<Double, Spliterator.OfDouble>
-            implements StreamBuilder.OfDouble, Spliterator.OfDouble {
+            implements DoubleStream.Builder, Spliterator.OfDouble {
         // The first element in the stream
         // valid if count == 1
         double first;
@@ -623,7 +637,7 @@ class Streams {
                 count = -count - 1;
                 // Use this spliterator if 0 or 1 elements, otherwise use
                 // the spliterator of the spined buffer
-                return (c < 2) ? StreamSupport.doubleStream(this) : StreamSupport.doubleStream(buffer.spliterator());
+                return (c < 2) ? StreamSupport.doubleStream(this, false) : StreamSupport.doubleStream(buffer.spliterator(), false);
             }
 
             throw new IllegalStateException();
@@ -650,6 +664,149 @@ class Streams {
             if (count == -2) {
                 action.accept(first);
                 count = -1;
+            }
+        }
+    }
+
+    abstract static class ConcatSpliterator<T, T_SPLITR extends Spliterator<T>>
+            implements Spliterator<T> {
+        protected final T_SPLITR aSpliterator;
+        protected final T_SPLITR bSpliterator;
+        // True when no split has occurred, otherwise false
+        boolean beforeSplit;
+        // Never read after splitting
+        final boolean unsized;
+
+        public ConcatSpliterator(T_SPLITR aSpliterator, T_SPLITR bSpliterator) {
+            this.aSpliterator = aSpliterator;
+            this.bSpliterator = bSpliterator;
+            beforeSplit = true;
+            // The spliterator is unsized before splitting if a and b are
+            // sized and the sum of the estimates overflows
+            unsized = aSpliterator.hasCharacteristics(SIZED)
+                      && aSpliterator.hasCharacteristics(SIZED)
+                      && aSpliterator.estimateSize() + bSpliterator.estimateSize() < 0;
+        }
+
+        @Override
+        public T_SPLITR trySplit() {
+            T_SPLITR ret = beforeSplit ? aSpliterator : (T_SPLITR) bSpliterator.trySplit();
+            beforeSplit = false;
+            return ret;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super T> consumer) {
+            boolean hasNext;
+            if (beforeSplit) {
+                hasNext = aSpliterator.tryAdvance(consumer);
+                if (!hasNext) {
+                    beforeSplit = false;
+                    hasNext = bSpliterator.tryAdvance(consumer);
+                }
+            }
+            else
+                hasNext = bSpliterator.tryAdvance(consumer);
+            return hasNext;
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super T> consumer) {
+            if (beforeSplit)
+                aSpliterator.forEachRemaining(consumer);
+            bSpliterator.forEachRemaining(consumer);
+        }
+
+        @Override
+        public long estimateSize() {
+            if (beforeSplit) {
+                // If one or both estimates are Long.MAX_VALUE then the sum
+                // will either be Long.MAX_VALUE or overflow to a negative value
+                long size = aSpliterator.estimateSize() + bSpliterator.estimateSize();
+                return (size >= 0) ? size : Long.MAX_VALUE;
+            }
+            else {
+                return bSpliterator.estimateSize();
+            }
+        }
+
+        @Override
+        public int characteristics() {
+            if (beforeSplit) {
+                // Concatenation loses DISTINCT and SORTED characteristics
+                return aSpliterator.characteristics() & bSpliterator.characteristics()
+                       & ~(Spliterator.DISTINCT | Spliterator.SORTED
+                           | (unsized ? Spliterator.SIZED | Spliterator.SUBSIZED : 0));
+            }
+            else {
+                return bSpliterator.characteristics();
+            }
+        }
+
+        @Override
+        public Comparator<? super T> getComparator() {
+            if (beforeSplit)
+                throw new IllegalStateException();
+            return bSpliterator.getComparator();
+        }
+
+        static class OfRef<T> extends ConcatSpliterator<T, Spliterator<T>> {
+            OfRef(Spliterator<T> aSpliterator, Spliterator<T> bSpliterator) {
+                super(aSpliterator, bSpliterator);
+            }
+        }
+
+        private static abstract class OfPrimitive<T, T_CONS, T_SPLITR extends Spliterator.OfPrimitive<T, T_CONS, T_SPLITR>>
+                extends ConcatSpliterator<T, T_SPLITR>
+                implements Spliterator.OfPrimitive<T, T_CONS, T_SPLITR> {
+            private OfPrimitive(T_SPLITR aSpliterator, T_SPLITR bSpliterator) {
+                super(aSpliterator, bSpliterator);
+            }
+
+            @Override
+            public boolean tryAdvance(T_CONS action) {
+                boolean hasNext;
+                if (beforeSplit) {
+                    hasNext = aSpliterator.tryAdvance(action);
+                    if (!hasNext) {
+                        beforeSplit = false;
+                        hasNext = bSpliterator.tryAdvance(action);
+                    }
+                }
+                else
+                    hasNext = bSpliterator.tryAdvance(action);
+                return hasNext;
+            }
+
+            @Override
+            public void forEachRemaining(T_CONS action) {
+                if (beforeSplit)
+                    aSpliterator.forEachRemaining(action);
+                bSpliterator.forEachRemaining(action);
+            }
+        }
+
+        static class OfInt
+                extends ConcatSpliterator.OfPrimitive<Integer, IntConsumer, Spliterator.OfInt>
+                implements Spliterator.OfInt {
+            OfInt(Spliterator.OfInt aSpliterator, Spliterator.OfInt bSpliterator) {
+                super(aSpliterator, bSpliterator);
+            }
+        }
+
+        static class OfLong
+                extends ConcatSpliterator.OfPrimitive<Long, LongConsumer, Spliterator.OfLong>
+                implements Spliterator.OfLong {
+            OfLong(Spliterator.OfLong aSpliterator, Spliterator.OfLong bSpliterator) {
+                super(aSpliterator, bSpliterator);
+            }
+        }
+
+        static class OfDouble
+                extends ConcatSpliterator.OfPrimitive<Double, DoubleConsumer, Spliterator.OfDouble>
+                implements Spliterator.OfDouble {
+            OfDouble(Spliterator.OfDouble aSpliterator, Spliterator.OfDouble bSpliterator) {
+                super(aSpliterator, bSpliterator);
             }
         }
     }

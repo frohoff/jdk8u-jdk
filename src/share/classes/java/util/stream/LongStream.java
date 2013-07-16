@@ -625,7 +625,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return a {@code DoubleStream} consisting of the elements of this stream,
      * converted to {@code double}
      */
-    DoubleStream doubles();
+    DoubleStream asDoubleStream();
 
     /**
      * Returns a {@code Stream} consisting of the elements of this stream,
@@ -655,7 +655,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *
      * @return a stream builder
      */
-    public static StreamBuilder.OfLong builder() {
+    public static Builder builder() {
         return new Streams.LongStreamBuilderImpl();
     }
 
@@ -665,7 +665,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return an empty sequential stream
      */
     public static LongStream empty() {
-        return StreamSupport.longStream(Spliterators.emptyLongSpliterator());
+        return StreamSupport.longStream(Spliterators.emptyLongSpliterator(), false);
     }
 
     /**
@@ -675,7 +675,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      * @return a singleton sequential stream
      */
     public static LongStream of(long t) {
-        return StreamSupport.longStream(new Streams.LongStreamBuilderImpl(t));
+        return StreamSupport.longStream(new Streams.LongStreamBuilderImpl(t), false);
     }
 
     /**
@@ -723,7 +723,7 @@ public interface LongStream extends BaseStream<Long, LongStream> {
         };
         return StreamSupport.longStream(Spliterators.spliteratorUnknownSize(
                 iterator,
-                Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL));
+                Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL), false);
     }
 
     /**
@@ -736,26 +736,20 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      */
     public static LongStream generate(LongSupplier s) {
         Objects.requireNonNull(s);
-        return StreamSupport.longStream(Spliterators.spliteratorUnknownSize(
-                new PrimitiveIterator.OfLong() {
-                    @Override
-                    public boolean hasNext() { return true; }
-
-                    @Override
-                    public long nextLong() { return s.getAsLong(); }
-                },
-                Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.NONNULL));
+        return StreamSupport.longStream(
+                new StreamSpliterators.InfiniteSupplyingSpliterator.OfLong(Long.MAX_VALUE, s), false);
     }
 
     /**
      * Returns a sequential {@code LongStream} from {@code startInclusive}
      * (inclusive) to {@code endExclusive} (exclusive) by an incremental step of
-     * 1.
+     * {@code 1}.
      *
-     * @implSpec
-     * The implementation behaves as if:
+     * @apiNote
+     * <p>An equivalent sequence of increasing values can be produced
+     * sequentially using a {@code for} loop as follows:
      * <pre>{@code
-     *     longRange(startInclusive, endExclusive, 1);
+     *     for (long i = startInclusive; i < endExclusive ; i++) { ... }
      * }</pre>
      *
      * @param startInclusive the (inclusive) initial value
@@ -764,36 +758,129 @@ public interface LongStream extends BaseStream<Long, LongStream> {
      *         elements
      */
     public static LongStream range(long startInclusive, final long endExclusive) {
-        return range(startInclusive, endExclusive, 1);
+        if (startInclusive >= endExclusive) {
+            return empty();
+        } else if (endExclusive - startInclusive < 0) {
+            // Size of range > Long.MAX_VALUE
+            // Split the range in two and concatenate
+            // Note: if the range is [Long.MIN_VALUE, Long.MAX_VALUE) then
+            // the lower range, [Long.MIN_VALUE, 0) will be further split in two
+            long m = startInclusive + Long.divideUnsigned(endExclusive - startInclusive, 2) + 1;
+            return concat(range(startInclusive, m), range(m, endExclusive));
+        } else {
+            return StreamSupport.longStream(
+                    new Streams.RangeLongSpliterator(startInclusive, endExclusive, false), false);
+        }
     }
 
     /**
      * Returns a sequential {@code LongStream} from {@code startInclusive}
-     * (inclusive) to {@code endExclusive} (exclusive) by {@code step}. If
-     * {@code startInclusive} is greater than or equal to {@code
-     * endExclusive}, an empty stream is returned.
+     * (inclusive) to {@code endInclusive} (inclusive) by an incremental step of
+     * {@code 1}.
      *
+     * @apiNote
      * <p>An equivalent sequence of increasing values can be produced
      * sequentially using a {@code for} loop as follows:
      * <pre>{@code
-     *     for (long i = startInclusive; i < endExclusive ; i += step) { ... }
+     *     for (long i = startInclusive; i <= endInclusive ; i++) { ... }
      * }</pre>
      *
      * @param startInclusive the (inclusive) initial value
-     * @param endExclusive the exclusive upper bound
-     * @param step the difference between consecutive values
+     * @param endInclusive the inclusive upper bound
      * @return a sequential {@code LongStream} for the range of {@code long}
      *         elements
-     * @throws IllegalArgumentException if {@code step} is less than or equal to
-     *                                  0
      */
-    public static LongStream range(long startInclusive, final long endExclusive, final long step) {
-        if (step <= 0) {
-            throw new IllegalArgumentException(String.format("Illegal step: %d", step));
-        } else if (startInclusive >= endExclusive) {
+    public static LongStream rangeClosed(long startInclusive, final long endInclusive) {
+        if (startInclusive > endInclusive) {
             return empty();
+        } else if (endInclusive - startInclusive + 1 <= 0) {
+            // Size of range > Long.MAX_VALUE
+            // Split the range in two and concatenate
+            // Note: if the range is [Long.MIN_VALUE, Long.MAX_VALUE] then
+            // the lower range, [Long.MIN_VALUE, 0), and upper range,
+            // [0, Long.MAX_VALUE], will both be further split in two
+            long m = startInclusive + Long.divideUnsigned(endInclusive - startInclusive, 2) + 1;
+            return concat(range(startInclusive, m), rangeClosed(m, endInclusive));
         } else {
-            return StreamSupport.longStream(new Streams.RangeLongSpliterator(startInclusive, endExclusive, step));
+            return StreamSupport.longStream(
+                    new Streams.RangeLongSpliterator(startInclusive, endInclusive, true), false);
         }
+    }
+
+    /**
+     * Creates a lazy concatenated {@code LongStream} whose elements are all the
+     * elements of a first {@code LongStream} succeeded by all the elements of the
+     * second {@code LongStream}. The resulting stream is ordered if both
+     * of the input streams are ordered, and parallel if either of the input
+     * streams is parallel.
+     *
+     * @param a the first stream
+     * @param b the second stream to concatenate on to end of the first stream
+     * @return the concatenation of the two streams
+     */
+    public static LongStream concat(LongStream a, LongStream b) {
+        Objects.requireNonNull(a);
+        Objects.requireNonNull(b);
+
+        Spliterator.OfLong split = new Streams.ConcatSpliterator.OfLong(
+                a.spliterator(), b.spliterator());
+        return StreamSupport.longStream(split, a.isParallel() || b.isParallel());
+    }
+
+    /**
+     * A mutable builder for a {@code LongStream}.
+     *
+     * <p>A stream builder has a lifecycle, where it starts in a building
+     * phase, during which elements can be added, and then transitions to a
+     * built phase, after which elements may not be added.  The built phase
+     * begins when the {@link #build()} method is called, which creates an
+     * ordered stream whose elements are the elements that were added to the
+     * stream builder, in the order they were added.
+     *
+     * @see LongStream#builder()
+     * @since 1.8
+     */
+    public interface Builder extends LongConsumer {
+
+        /**
+         * Adds an element to the stream being built.
+         *
+         * @throws IllegalStateException if the builder has already transitioned
+         * to the built state
+         */
+        @Override
+        void accept(long t);
+
+        /**
+         * Adds an element to the stream being built.
+         *
+         * @implSpec
+         * The default implementation behaves as if:
+         * <pre>{@code
+         *     accept(t)
+         *     return this;
+         * }</pre>
+         *
+         * @param t the element to add
+         * @return {@code this} builder
+         * @throws IllegalStateException if the builder has already transitioned
+         * to the built state
+         */
+        default Builder add(long t) {
+            accept(t);
+            return this;
+        }
+
+        /**
+         * Builds the stream, transitioning this builder to the built state.
+         * An {@code IllegalStateException} is thrown if there are further
+         * attempts to operate on the builder after it has entered the built
+         * state.
+         *
+         * @return the built stream
+         * @throws IllegalStateException if the builder has already transitioned
+         * to the built state
+         */
+        LongStream build();
     }
 }
