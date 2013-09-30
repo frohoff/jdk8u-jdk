@@ -51,7 +51,6 @@ public abstract class Executable extends AccessibleObject
      * Accessor method to allow code sharing
      */
     abstract byte[] getAnnotationBytes();
-    abstract byte[] getTypeAnnotationBytes();
 
     /**
      * Does the Executable have generic information.
@@ -352,6 +351,12 @@ public abstract class Executable extends AccessibleObject
     private transient volatile Parameter[] parameters;
 
     private native Parameter[] getParameters0();
+    private native byte[] getTypeAnnotationBytes0();
+
+    // Needed by reflectaccess
+    byte[] getTypeAnnotationBytes() {
+        return getTypeAnnotationBytes0();
+    }
 
     /**
      * Returns an array of {@code Class} objects that represent the
@@ -514,18 +519,20 @@ public abstract class Executable extends AccessibleObject
     }
 
     /**
-     * Returns an AnnotatedType object that represents the use of a type to
+     * Returns an {@code AnnotatedType} object that represents the use of a type to
      * specify the return type of the method/constructor represented by this
      * Executable.
      *
-     * If this Executable represents a constructor, the AnnotatedType object
-     * represents the type of the constructed object.
+     * If this {@code Executable} object represents a constructor, the {@code
+     * AnnotatedType} object represents the type of the constructed object.
      *
-     * If this Executable represents a method, the AnnotatedType object
-     * represents the use of a type to specify the return type of the method.
+     * If this {@code Executable} object represents a method, the {@code
+     * AnnotatedType} object represents the use of a type to specify the return
+     * type of the method.
      *
-     * @return an object representing the return type of this method
-     * or constructor
+     * @return an object representing the return type of the method
+     * or constructor represented by this {@code Executable}
+     *
      * @since 1.8
      */
     public abstract AnnotatedType getAnnotatedReturnType();
@@ -539,7 +546,7 @@ public abstract class Executable extends AccessibleObject
      * @since 1.8
      */
     AnnotatedType getAnnotatedReturnType0(Type returnType) {
-        return TypeAnnotationParser.buildAnnotatedType(getTypeAnnotationBytes(),
+        return TypeAnnotationParser.buildAnnotatedType(getTypeAnnotationBytes0(),
                 sun.misc.SharedSecrets.getJavaLangAccess().
                         getConstantPool(getDeclaringClass()),
                 this,
@@ -549,25 +556,30 @@ public abstract class Executable extends AccessibleObject
     }
 
     /**
-     * Returns an AnnotatedType object that represents the use of a type to
-     * specify the receiver type of the method/constructor represented by this
-     * Executable. The receiver type of a method/constructor is available only
-     * if the method/constructor declares a formal parameter called 'this'.
+     * Returns an {@code AnnotatedType} object that represents the use of a
+     * type to specify the receiver type of the method/constructor represented
+     * by this Executable object. The receiver type of a method/constructor is
+     * available only if the method/constructor has a <em>receiver
+     * parameter</em> (JLS 8.4.1).
      *
-     * Returns null if this Executable represents a constructor or instance
-     * method that either declares no formal parameter called 'this', or
-     * declares a formal parameter called 'this' with no annotations on its
-     * type.
+     * If this {@code Executable} object represents a constructor or instance
+     * method that does not have a receiver parameter, or has a receiver
+     * parameter with no annotations on its type, then the return value is an
+     * {@code AnnotatedType} object representing an element with no
+     * annotations.
      *
-     * Returns null if this Executable represents a static method.
+     * If this {@code Executable} object represents a static method, then the
+     * return value is null.
      *
-     * @return an object representing the receiver type of the
-     * method or constructor represented by this Executable
+     * @return an object representing the receiver type of the method or
+     * constructor represented by this {@code Executable}
      *
      * @since 1.8
      */
     public AnnotatedType getAnnotatedReceiverType() {
-        return TypeAnnotationParser.buildAnnotatedType(getTypeAnnotationBytes(),
+        if (Modifier.isStatic(this.getModifiers()))
+            return null;
+        return TypeAnnotationParser.buildAnnotatedType(getTypeAnnotationBytes0(),
                 sun.misc.SharedSecrets.getJavaLangAccess().
                         getConstantPool(getDeclaringClass()),
                 this,
@@ -577,8 +589,8 @@ public abstract class Executable extends AccessibleObject
     }
 
     /**
-     * Returns an array of AnnotatedType objects that represent the use of
-     * types to specify formal parameter types of the method/constructor
+     * Returns an array of {@code AnnotatedType} objects that represent the use
+     * of types to specify formal parameter types of the method/constructor
      * represented by this Executable. The order of the objects in the array
      * corresponds to the order of the formal parameter types in the
      * declaration of the method/constructor.
@@ -587,12 +599,13 @@ public abstract class Executable extends AccessibleObject
      * parameters.
      *
      * @return an array of objects representing the types of the
-     * formal parameters of this method or constructor
+     * formal parameters of the method or constructor represented by this
+     * {@code Executable}
      *
      * @since 1.8
      */
     public AnnotatedType[] getAnnotatedParameterTypes() {
-        return TypeAnnotationParser.buildAnnotatedTypes(getTypeAnnotationBytes(),
+        return TypeAnnotationParser.buildAnnotatedTypes(getTypeAnnotationBytes0(),
                 sun.misc.SharedSecrets.getJavaLangAccess().
                         getConstantPool(getDeclaringClass()),
                 this,
@@ -602,8 +615,8 @@ public abstract class Executable extends AccessibleObject
     }
 
     /**
-     * Returns an array of AnnotatedType objects that represent the use of
-     * types to specify the declared exceptions of the method/constructor
+     * Returns an array of {@code AnnotatedType} objects that represent the use
+     * of types to specify the declared exceptions of the method/constructor
      * represented by this Executable. The order of the objects in the array
      * corresponds to the order of the exception types in the declaration of
      * the method/constructor.
@@ -612,12 +625,13 @@ public abstract class Executable extends AccessibleObject
      * exceptions.
      *
      * @return an array of objects representing the declared
-     * exceptions of this method or constructor
+     * exceptions of the method or constructor represented by this {@code
+     * Executable}
      *
      * @since 1.8
      */
     public AnnotatedType[] getAnnotatedExceptionTypes() {
-        return TypeAnnotationParser.buildAnnotatedTypes(getTypeAnnotationBytes(),
+        return TypeAnnotationParser.buildAnnotatedTypes(getTypeAnnotationBytes0(),
                 sun.misc.SharedSecrets.getJavaLangAccess().
                         getConstantPool(getDeclaringClass()),
                 this,

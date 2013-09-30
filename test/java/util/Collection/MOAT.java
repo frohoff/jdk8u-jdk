@@ -207,8 +207,8 @@ public class MOAT {
                new Fun(){void f(){ it.next(); }});
 
         try { it.remove(); }
-        catch (IllegalStateException _) { pass(); }
-        catch (UnsupportedOperationException _) { pass(); }
+        catch (IllegalStateException ignored) { pass(); }
+        catch (UnsupportedOperationException ignored) { pass(); }
         catch (Throwable t) { unexpected(t); }
 
         if (rnd.nextBoolean())
@@ -280,9 +280,9 @@ public class MOAT {
         testEmptyCollection(m.values());
 
         try { check(! m.containsValue(null)); }
-        catch (NullPointerException _) { /* OK */ }
+        catch (NullPointerException ignored) { /* OK */ }
         try { check(! m.containsKey(null)); }
-        catch (NullPointerException _) { /* OK */ }
+        catch (NullPointerException ignored) { /* OK */ }
         check(! m.containsValue(1));
         check(! m.containsKey(1));
     }
@@ -400,8 +400,6 @@ public class MOAT {
     // If add(null) succeeds, contains(null) & remove(null) should succeed
     //----------------------------------------------------------------
     private static void testNullElement(Collection<Integer> c) {
-        // !!!! 5018849: (coll) TreeSet.contains(null) does not agree with Javadoc
-        if (c instanceof TreeSet) return;
 
         try {
             check(c.add(null));
@@ -712,8 +710,8 @@ public class MOAT {
             l.addAll(-1, Collections.<Integer>emptyList());
             fail("Expected IndexOutOfBoundsException not thrown");
         }
-        catch (UnsupportedOperationException _) {/* OK */}
-        catch (IndexOutOfBoundsException _) {/* OK */}
+        catch (UnsupportedOperationException ignored) {/* OK */}
+        catch (IndexOutOfBoundsException ignored) {/* OK */}
         catch (Throwable t) { unexpected(t); }
 
 //      equal(l instanceof Serializable,
